@@ -154,9 +154,9 @@ def main(args):
         print(f"Total samples: {len(dataset)}")
         
     # TODO: here need to be whipser-base, batch_size=64
-    hallucination_dectector = WhisperSmallModelDetector(small_model_card='openai/whisper-tiny', accelerator=accelerator)
+    hallucination_dectector = WhisperSmallModelDetector(small_model_card=args.validator, accelerator=accelerator)
     dataloader_for_test = DataLoader(dataset, 
-        batch_size=16, 
+        batch_size=args.batch_size, 
         num_workers=8,
         shuffle=False, 
         collate_fn=hallucination_dectector.collate_fn,
@@ -195,8 +195,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     
     parser.add_argument(
-        "--validator_model_card",
-        default="openai/whisper-base",
+        "--validator",
+        default="openai/whisper-tiny",
+        help="a sample arg",
+    )
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=16,
         help="a sample arg",
     )
     parser.add_argument(

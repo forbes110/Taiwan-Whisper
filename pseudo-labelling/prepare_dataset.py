@@ -86,6 +86,8 @@ def segment_audio_by_trans(audio_trans_pair, segment_output_dir):
         
         segments = read_pseudo_labels(trans_fpath)
         
+        
+        # TODO: this is added since audio sec count is not always from 0
         prev_end_frame = int(segments[0][0] * SAMPLE_RATE)
         prev_text = ""
         cur_text = ""
@@ -94,17 +96,27 @@ def segment_audio_by_trans(audio_trans_pair, segment_output_dir):
         for i, segment in enumerate(segments):
             
             start, end, text = segment
+            
+            print(f"start: {start}, end: {end}, text: {text}")
                         
             s_frame = int(start * SAMPLE_RATE)
             e_frame = int(end * SAMPLE_RATE)
+            
+            # 4288, 496480
+            print(f"s_frame: {s_frame}, e_frame: {end}, text: {e_frame}")
+            
 
+            # 0
             s_timetag = frame_diff_to_timestamp(s_frame - prev_end_frame)
+            
+            # 492192
             e_timetag = frame_diff_to_timestamp(e_frame - prev_end_frame)
-
+            
+            # 31.03 - 0.268 
             if e_frame - prev_end_frame > SEGMENT_LENGTH:
                 cur_end_frame = prev_end_frame + SEGMENT_LENGTH
                 
-                segmented_audio = audio_data[prev_end_frame:s_frame]
+                segmented_audio = audio_data[prev_end_frame:cur_end_frame]
                 
                 if cur_end_frame - s_frame > ADD_CONTINUED_TOKEN_THRESHOLD * SAMPLE_RATE:
                     cur_text += s_timetag
@@ -112,16 +124,18 @@ def segment_audio_by_trans(audio_trans_pair, segment_output_dir):
                 
                 cur_text += "<|endoftext|>"
                 
-                segment_output_fpath = osp.join(audio_output_dir, f"{file_name}_{prev_end_frame}-{s_frame}.flac")
+                segment_output_fpath = osp.join(audio_output_dir, f"{file_name}_{prev_end_frame}-{cur_end_frame}.flac")
                 sf.write(segment_output_fpath, segmented_audio, SAMPLE_RATE)
 
-                with open(osp.join(audio_output_dir, f"{file_name}_{prev_end_frame}-{s_frame}.txt"), 'w') as f:
+                with open(osp.join(audio_output_dir, f"{file_name}_{prev_end_frame}-{cur_end_frame}.txt"), 'w') as f:
                     
                     # current segment
                     f.write(cur_text + "\n")
                     
+                    f.write("\n" + s_timetag + text + e_timetag + "\n")
+                    
                     # previous segment as promt to the model
-                    f.write(prev_text + "\n")
+                    f.write("\n" + prev_text + "\n")
 
                 prev_end_frame = s_frame
                 prev_text = cur_text

@@ -56,8 +56,9 @@ def check_single_trans(input, skip_special_tokens=True, metric=None, threshold=0
         # remove <|continued|>
         whisper_transcript = whisper_transcript.split("<|continued|>")[0] 
         
-        # prev segment as prompt, but not used here
-        end_transcript = lines[1].strip()
+        # TODO: check here, would it be correct??
+        
+        end_transcript = lines[2].strip()
         
         # find all timestamp tokens ('<|*|>') and remove them in the transcript
         timestamp_tokens = re.findall(r"<\|\d{1,2}\.\d{2}\|>", whisper_transcript + end_transcript)

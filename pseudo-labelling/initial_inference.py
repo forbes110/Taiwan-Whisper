@@ -17,7 +17,7 @@ def parse_args():
     parser.add_argument("--output_dir", type=str, default="/mnt/pseudo_label", help="Directory to save output CSV files.")
     parser.add_argument("--language", type=str, default="zh", help="Language code for transcription.")
     parser.add_argument("--log_progress", default=True, help="Display progress bars during transcription.")
-    parser.add_argument("--model_size_or_path", type=str, default="tiny", help="Size or path of the Whisper model.")
+    parser.add_argument("--model_size", type=str, default="tiny", help="Size or path of the Whisper model.")
     parser.add_argument("--compute_type", type=str, default="default", help="Compute type for CTranslate2 model.")
     parser.add_argument('--chunk_length', type=int, default=5, help='The length of audio segments. If it is not None, it will overwrite the default chunk_length of the FeatureExtractor.')
     parser.add_argument('--batch_size', type=int, default=64, help='The maximum number of parallel requests to model for decoding.')
@@ -40,7 +40,7 @@ def transcribe_audio_file(pipeline, audio_path, language="zh", log_progress=Fals
         batch_size=batch_size,
     )
     results = [
-        {"start": f"{segment.start:.2f}", "end": f"{segment.end:.2f}", "text": segment.text}
+        {"start": f"{segment.start}", "end": f"{segment.end}", "text": segment.text}
         for segment in segments
     ]
     return results
@@ -56,15 +56,15 @@ def save_transcription_to_csv(transcriptions, output_csv):
 def main():
     args = parse_args()
     print(args)
-    model_size_or_path = args.model_size_or_path
+    model_size = args.model_size
 
     """Main function to process all audio files listed in dataset.csv."""
     audio_files = load_dataset(args.dataset_path)
                    
     # Initialize Whisper model and the pipeline
     model = WhisperModel(
-        model_size_or_path=model_size_or_path,
-        device = "cuda",
+        model_size_or_path=model_size,
+        device = "cuda" if torch.cuda.is_available() else "cpu",
         device_index = [0],
         compute_type=args.compute_type,
         num_workers=args.num_workers  # Set number of workers for parallel processing
@@ -78,7 +78,7 @@ def main():
         multilingual=True,
         task="transcribe",
         language="zh",
-        tokenizer=tokenizers.Tokenizer.from_pretrained(model_size_or_path)
+        tokenizer=tokenizers.Tokenizer.from_pretrained(f"openai/whisper-{model_size}")
     )
     
     pipeline = BatchedInferencePipeline(

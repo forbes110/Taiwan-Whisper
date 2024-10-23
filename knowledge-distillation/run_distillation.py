@@ -65,9 +65,7 @@ from transformers.modeling_outputs import BaseModelOutput
 from transformers.models.whisper.english_normalizer import BasicTextNormalizer, EnglishTextNormalizer
 from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
-from utils.model_utils import mix_language_embeddings
-from utils.hallucination_detector import check_hallucination
-from utils.evaluation import MixErrorRate
+from utils import MixErrorRate, load_customized_dataset
 
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
@@ -534,6 +532,17 @@ def log_metric(
         
     accelerator.log(log_metrics, step=step)
 
+def mix_language_embeddings(model: WhisperForConditionalGeneration, tokenizer, languages=['zh', 'en'], target_language='zh', weights=None):
+    target_id = tokenizer.convert_tokens_to_ids(f"<|{target_language}|>")
+    new_embedding = torch.zeros(model.model.decoder.embed_tokens.weight[target_id].shape, dtype=model.model.decoder.embed_tokens.weight[target_id].dtype)
+    if weights is None:
+        weights = [1/len(languages)] * len(languages)
+    with torch.no_grad():
+        for language, weight in zip(languages, weights):
+            language_id = tokenizer.convert_tokens_to_ids(f"<|{language}|>")
+            new_embedding += model.model.decoder.embed_tokens.weight[language_id] * weight
+        model.model.decoder.embed_tokens.weight[target_id] = new_embedding
+    return model
 
 def log_pred(
     accelerator,
@@ -594,6 +603,31 @@ def log_pred(
             writer.writerow(["Target", "Pred", "Norm Target", "Norm Pred"])
             writer.writerows(str_data_incorrect[:num_lines])
 
+def check_hallucination(segment, **kwargs):
+    if type(segment) == str:
+        text = segment
+    elif type(segment) == tuple:
+        s, e, text = segment
+    def _length_checker(text, threshold=150):
+        if len(text) < threshold:
+            return False
+        return True
+
+    def _char_ngram_checker(text, n=6, threshold=5):
+        ngram_counts = defaultdict(lambda: 0)
+        if len(text) < n:
+            return False
+        for i in range(len(text) - n + 1):
+            ngram = text[i:i+n]
+            if '|>' in ngram or '<|' in ngram: continue
+            ngram_counts[ngram] += 1
+        counts = ngram_counts.values()
+        counts = np.array(list(counts), dtype=np.float16)
+        max_count = counts.max()
+        if max_count > threshold:
+            return True
+        return False
+    return _char_ngram_checker(text, **kwargs)
 
 def convert_dataset_str_to_list(
     dataset_names,
@@ -701,6 +735,7 @@ def load_multiple_datasets(
             dataset_dict["config"],
             split=dataset_dict["split"],
             streaming=streaming,
+            trust_remote_code=True, 
             **kwargs,
         )
         # resample to specified sampling rate
@@ -750,24 +785,6 @@ def load_multiple_datasets(
         interleaved_dataset = concatenate_datasets(all_datasets)
 
     return interleaved_dataset
-
-def customized_data_generator(audio_fpaths, last_segment_handler_type="trim"):
-    for audio_fpath in audio_fpaths:
-        feature = _get_feature_by_audio_fpath(audio_fpath, last_segment_handler_type=last_segment_handler_type)
-        yield feature
-
-def load_customized_dataset(manifest_fpath, root=None) -> IterableDataset:
-    print(f"Loading customized dataset from {manifest_fpath}")
-    audio_fpaths = load_audio_fpaths(manifest_fpath, root=root)
-    ex_feature = Features()
-    ex_feature["audio"] = "dummy"
-    ex_feature["text"] = "dummy"
-    ex_feature['whisper_transcript'] = "dummy"
-    ex_feature['last_segment_transcript'] = "dummy"
-    ex_feature['condition_on_prev'] = "dummy"
-    customized_dataset = IterableDataset.from_generator(customized_data_generator, features=ex_feature, gen_kwargs={"audio_fpaths": audio_fpaths})
-
-    return customized_dataset, audio_fpaths
 
 def sorted_checkpoints(output_dir=None, checkpoint_prefix="checkpoint") -> List[str]:
     """Helper function to sort saved checkpoints from oldest to newest."""
@@ -967,6 +984,7 @@ def main():
                 cache_dir=data_args.dataset_cache_dir,
                 token=model_args.token,
                 streaming=data_args.streaming,
+                trust_remote_code=True
             )
             if data_args.eval_text_column_name != "text":
                 raw_datasets["eval"] = raw_datasets["eval"].rename_column(data_args.eval_text_column_name, "text")
@@ -986,6 +1004,7 @@ def main():
                     cache_dir=data_args.dataset_cache_dir,
                     token=model_args.token,
                     streaming=data_args.streaming,
+                    trust_remote_code=True
                 )
                 # make column names consistent (text, audio)
                 if dataset_dict["text_column_name"] != "text":

@@ -1,6 +1,8 @@
 python3 validator_inference.py \
     --manifest /mnt/audio_paths.tsv \
-    --output_dir /mnt
+    --output_dir /mnt \
+    --validator openai/whisper-tiny \
+    --batch_size 64
 
 
 

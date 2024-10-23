@@ -120,6 +120,7 @@ def main(args):
     if valid_f is not None:
         valid_f.close()
 
+    print(f"generate metadata(of paths) at {args.dest}/{output_fname}.tsv")
 
 if __name__ == "__main__":
     parser = get_parser()
