@@ -8,7 +8,7 @@ from functools import partial
 from pypinyin import pinyin, lazy_pinyin, Style
 from g2p_en import G2p # too slow, should use lexicon instead
 import edit_distance
-lexicon_fpath = '/root/distil-whisper/utils/lexicon.lst'
+lexicon_fpath = './prefiltering/lexicon.lst'
 
 def cal_complete_mer(ref_data, hyp_data):
     S, D, I, N = (0, 0, 0, 0)
@@ -51,10 +51,10 @@ class MixErrorRate(object):
             raise ValueError("Can't convert to both simplified and traditional chinese at the same time.")
         if to_simplified_chinese:
             print("Convert to simplified chinese")
-            self.converter = opencc.OpenCC('t2s.json')
+            self.converter = opencc.OpenCC('t2s')
         elif to_traditional_chinese:
             print("Convert to traditional chinese")
-            self.converter = opencc.OpenCC('s2t.json')
+            self.converter = opencc.OpenCC('s2t')
         else:
             print("No chinese conversion")
         if phonemize:
@@ -62,7 +62,7 @@ class MixErrorRate(object):
                 raise NotImplementedError("Can't separate language and phonemize at the same time.")
             print("Phonemize chinese and english words")
             print("Force traditional to simplified conversion")
-            self.converter = opencc.OpenCC('t2s.json')
+            self.converter = opencc.OpenCC('t2s')
             self.zh_phonemizer = partial(lazy_pinyin, style=Style.BOPOMOFO, errors='ignore')
             self.zh_bopomofo_stress_marks = ['ˊ', 'ˇ', 'ˋ', '˙']
             self.en_wrd2phn = defaultdict(lambda: [])

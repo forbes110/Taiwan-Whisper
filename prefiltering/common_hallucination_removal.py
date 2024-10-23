@@ -3,6 +3,8 @@ import argparse
 import os.path as osp
 import os
 import re
+import pandas as pd
+
 
 
 def parse_args():
@@ -101,6 +103,10 @@ def main():
 
     if not match_results and not contain_results:
         print("No common hallucination found.")
+        
+    
+    # TODO: del matched cases
+    
                                 
 if __name__ == "__main__":
     main()

@@ -1,47 +1,55 @@
-accelerate launch --num_processes 4 --main_process_port 29500 run_distillation.py \
-  --model_name_or_path "$root/student_models/basic" \
-  --teacher_model_name_or_path "openai/whisper-large-v2" \
-  --train_dataset_manifest "$data_root/manifest/mix_detection/allow_empty/train_non-hallucinated-whisper-base-threshold0.6-phonemized-mix_detection-allow_empty.tsv" \
-  --train_dataset_root $data_root/train/categorized \
-  --train_dataset_name "" \
-  --train_split_name "" \
-  --text_column_name "" \
-  --train_dataset_samples "" \
-  --eval_dataset_name "$root/data/common_voice_16_1_zh-TW_pseudo_labelled" \
-  --eval_split_name "validation" \
-  --eval_text_column_name "sentence" \
-  --eval_steps 1000 \
-  --save_steps 5000 \
-  --warmup_steps 50 \
-  --learning_rate 0.0001 \
-  --lr_scheduler_type "constant_with_warmup" \
-  --timestamp_probability 0.5 \
-  --condition_on_prev_probability 0.2 \
-  --language "zh" \
-  --task "transcribe" \
-  --logging_steps 100 \
-  --save_total_limit 20 \
-  --max_steps 120000 \
-  --wer_threshold 20 \
-  --is_prefiltered True \
-  --skip_audio_length_filtering True \
-  --per_device_train_batch_size 32 \
-  --per_device_eval_batch_size 32 \
-  --gradient_accumulation_steps 2 \
-  --dataloader_prefetch_factor 2 \
-  --dataloader_num_workers 16 \
-  --preprocessing_num_workers 16 \
-  --ddp_timeout 7200 \
-  --dtype "bfloat16" \
-  --attn_implementation "sdpa" \
-  --output_dir "mnt/kd_output" \
-  --wandb_name "knowledge-distillation" \
-  --do_train \
-  --do_eval \
-  --gradient_checkpointing \
-  --predict_with_generate \
-  --freeze_encoder \
-  --freeze_embed_positions \
-  --streaming True \
-  --overwrite_output_dir \
-  --mix_lang_emb True
+# TODO: streaming == True?
+# Do KD
+accelerate launch run_distillation.py \
+    --model_name_or_path "/mnt/student_model" \
+    --teacher_model_name_or_path "openai/whisper-tiny" \
+    --train_dataset_manifest "/mnt/cleaned-threshold-0.4.tsv" \
+    --train_dataset_name "" \
+    --train_split_name "" \
+    --text_column_name "" \
+    --train_dataset_samples "" \
+    --eval_dataset_name "mozilla-foundation/common_voice_16_1" \
+    --eval_dataset_config_name "zh-TW" \
+    --eval_split_name "validation" \
+    --eval_text_column_name "sentence" \
+    --eval_steps 1000 \
+    --save_steps 5000 \
+    --warmup_steps 50 \
+    --learning_rate 0.0001 \
+    --lr_scheduler_type "constant_with_warmup" \
+    --timestamp_probability 0.5 \
+    --condition_on_prev_probability 0.2 \
+    --language "zh" \
+    --task "transcribe" \
+    --logging_steps 100 \
+    --save_total_limit 20 \
+    --max_steps 120000 \
+    --wer_threshold 20 \
+    --per_device_train_batch_size 32 \
+    --per_device_eval_batch_size 32 \
+    --dataloader_num_workers 8 \
+    --preprocessing_num_workers 8 \
+    --ddp_timeout 7200 \
+    --dtype "bfloat16" \
+    --attn_implementation "sdpa" \
+    --output_dir "/mnt/predictions" \
+    --do_train \
+    --do_eval \
+    --gradient_checkpointing \
+    --overwrite_output_dir \
+    --predict_with_generate \
+    --freeze_encoder \
+    --freeze_embed_positions \
+    --streaming True \
+    --push_to_hub \
+    --is_prefiltered True \
+    --skip_audio_length_filtering True \
+    --gradient_accumulation_steps 2 \
+    --dataloader_prefetch_factor 2 \
+    --wandb_name "tw-whisper" 
+
+
+# TODO 1.: Note that we now use common voice 16.1 as the temperary eval dataset, may need to change it later, like train/valid split psuedo-labelled.
+# TODO 2.: WER or CER threshold?
+# TODO 3. check train_dataset_manifest is what? only flac paths or path, text pair?
+# TODO 4. mixed_precision
