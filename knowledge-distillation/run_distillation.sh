@@ -41,12 +41,12 @@ accelerate launch run_distillation.py \
     --freeze_encoder \
     --freeze_embed_positions \
     --streaming True \
-    --push_to_hub \
     --is_prefiltered True \
     --skip_audio_length_filtering True \
     --gradient_accumulation_steps 2 \
-    --dataloader_prefetch_factor 2 \
-    --wandb_name "tw-whisper" 
+    --dataloader_prefetch_factor 2 
+    # --push_to_hub \ 
+
 
 
 # TODO 1.: Note that we now use common voice 16.1 as the temperary eval dataset, may need to change it later, like train/valid split psuedo-labelled.
