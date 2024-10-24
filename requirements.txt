@@ -1,5 +1,5 @@
 # Core dependencies
-torch>=1.10
+torch>=2.1.1 
 transformers>=4.35.1
 datasets[audio]>=2.14.7
 accelerate>=0.24.1
@@ -8,11 +8,13 @@ evaluate>=0.4.1
 wandb
 tensorboard
 nltk
+huggingface_hub>=0.13
 
 # Optional development dependencies
 ruff==0.1.5
 
 # Additional pip packages
+av>=11
 absl-py==2.1.0 
 aiohappyeyeballs==2.4.3
 aiohttp==3.10.10
