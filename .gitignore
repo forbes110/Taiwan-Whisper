@@ -15,7 +15,7 @@ packages
 *.egg-info
 __pycache__/
 **/__pycache__/
-華康
+華康.md
 # symlinked directories
 /transformers
 !/transformers/
