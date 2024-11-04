@@ -85,6 +85,7 @@ omegaconf==2.3.0
 onnxruntime==1.19.2
 openai-whisper==20240930
 opencc==1.1.9
+chardet==4.0.0
 optuna==4.0.0
 packaging==24.1
 pandas==2.2.3

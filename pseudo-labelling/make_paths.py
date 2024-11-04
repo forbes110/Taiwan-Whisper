@@ -52,9 +52,9 @@ if __name__ == "__main__":
     
     
 # for single dir, we use:
-# echo -e "audio_paths" > audio_files.tsv
-# find "$(pwd)" -name "*.flac" >> audio_files.tsv
+# echo -e "audio_path" > raw_data.tsv
+# find "$(pwd)" -name "*.m4a" >> raw_data.tsv
 
 
-# echo -e "audio_paths" > audio_files.tsv
-# find "$(pwd)" -name "*.m4a" >> audio_files.tsv
+# echo -e "audio_path" > raw_data.tsv
+# find "$(pwd)" -name "*.m4a" >> raw_data.tsv

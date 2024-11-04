@@ -1,4 +1,6 @@
 # TODO: streaming == True?
+huggingface-cli login
+
 # Do KD
 accelerate launch run_distillation.py \
     --model_name_or_path "/mnt/student_model" \
@@ -24,14 +26,13 @@ accelerate launch run_distillation.py \
     --logging_steps 100 \
     --save_total_limit 20 \
     --max_steps 120000 \
-    --wer_threshold 20 \
     --per_device_train_batch_size 32 \
     --per_device_eval_batch_size 32 \
     --dataloader_num_workers 8 \
     --preprocessing_num_workers 8 \
     --ddp_timeout 7200 \
     --dtype "bfloat16" \
-    --attn_implementation "sdpa" \
+    --attn_implementation "flash_attn_2" \
     --output_dir "/mnt/predictions" \
     --do_train \
     --do_eval \

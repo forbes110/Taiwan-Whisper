@@ -16,7 +16,6 @@ from functools import partial
 import csv
 from contextlib import contextmanager
 
-
 def check_hallucination(segment, **kwargs):
     if type(segment) == str:
         text = segment

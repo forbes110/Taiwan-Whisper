@@ -10,3 +10,15 @@ python3 initial_inference.py \
     --chunk_length 5 \
     --num_workers 8 \
     --batch_size 16
+
+
+# python3 initial_inference.py \
+#     --dataset_path /mnt/dataset_1T/BabyBusTC/raw_data.tsv \
+#     --output_dir /mnt/pseudo_label/BabyBusTC \
+#     --language zh \
+#     --log_progress True \
+#     --model_size tiny \
+#     --compute_type default \
+#     --chunk_length 5 \
+#     --num_workers 8 \
+#     --batch_size 16
