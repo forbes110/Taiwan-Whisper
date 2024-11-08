@@ -18,8 +18,6 @@ Training the Whisper model for sequence to sequence speech recognition via teach
 """
 # You can also adapt this script for your own distillation tasks. Pointers for this are left as comments.
 
-# TODO: openCC
-
 import logging
 import os
 import re

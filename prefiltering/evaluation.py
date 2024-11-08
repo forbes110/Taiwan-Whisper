@@ -39,7 +39,7 @@ def cal_single_complete_mer(ref, hyp):
 class MixErrorRate(object):
     def __init__(
         self, 
-        to_simplified_chinese=True, 
+        to_simplified_chinese=True, # set to True to make sure both the reference and hypothesis are in simplified chinese(since validator supports simplified more).
         to_traditional_chinese=False, 
         phonemize=False, 
         separate_language=False, 
@@ -47,6 +47,7 @@ class MixErrorRate(object):
         count_repetitive_hallucination=False,
         calculate_complete_mer=False
     ):
+        
         self.converter = None
         if to_simplified_chinese and to_traditional_chinese:
             raise ValueError("Can't convert to both simplified and traditional chinese at the same time.")
@@ -155,6 +156,7 @@ class MixErrorRate(object):
         return count
 
     def compute(self, predictions=None, references=None, show_progress=True, empty_error_rate=1.0, **kwargs):
+        # called: mer = metric.compute([whisper_transcript], [hyp], show_progress=False, empty_error_rate=empty_error_rate)
         total_err = 0
         total_ref_len = 0
         total_en_err = 0

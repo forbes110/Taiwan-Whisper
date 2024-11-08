@@ -55,8 +55,6 @@ def check_single_trans(input, skip_special_tokens=True, metric=None, threshold=0
         # remove <|continued|>
         whisper_transcript = whisper_transcript.split("<|continued|>")[0] 
         
-        # TODO: check here, would it be correct??
-        
         end_transcript = lines[2].strip()
         
         # find all timestamp tokens ('<|*|>') and remove them in the transcript
@@ -85,9 +83,21 @@ def check_single_trans(input, skip_special_tokens=True, metric=None, threshold=0
         if small_is_hallucinated: 
             return idx, False, None
     
+    # TODO: just to check
+    if hyp == '主席':
+        print(f"\ninitial_inference:{whisper_transcript}\nvalidator_inference:{hyp}\ntrans_fpath:{trans_fpath}") 
+    
     if mer > threshold:
         return idx, True, (mer, whisper_transcript, hyp, trans_fpath, idx)
     
+    # uncomment to check the certified case
+    else:
+        # print(f"initial_inference:{whisper_transcript}\nvalidator_inference:{hyp}\n")  
+        if hyp == '主席':
+            print("\n-------------------------------------------------------------------------------------------------")
+            print(f"\ninitial_inference:{whisper_transcript}\nvalidator_inference:{hyp}\ntrans_fpath:{trans_fpath}") 
+            print("-------------------------------------------------------------------------------------------------\n")
+      
     return idx, False, None
 
 def whisper_checker(
@@ -140,7 +150,9 @@ def whisper_checker(
         idx_to_src_and_hyp[valid_idx]['src'] = trans_fpaths[valid_idx]
         
     idx_and_src_and_hyps = [(k, v['src'], v['hyp']) for k, v in idx_to_src_and_hyp.items()]
-    metric = MixErrorRate(phonemize=phonemize)
+    
+    # set to True to make sure both the reference and hypothesis are in simplified chinese(since validator supports simplified more).
+    metric = MixErrorRate(phonemize=phonemize, to_simplified_chinese=True, to_traditional_chinese=False)
     normalizer = BasicTextNormalizer()
     
     # check hallucination
