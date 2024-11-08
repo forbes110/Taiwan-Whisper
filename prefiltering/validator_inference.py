@@ -146,16 +146,19 @@ def main(args):
     print(args) 
 
     accelerator = None
-    accelerator = Accelerator(
-
-    )
+    accelerator = Accelerator()
+    
+    os.makedirs(args.output_dir, exist_ok=True)
+    
     dataset = PreFilterASRDataset(args.manifest)
     if accelerator.is_main_process:
         print(f"Total samples: {len(dataset)}")
         
     # TODO: here need to be whipser-base, batch_size=64
     hallucination_dectector = WhisperSmallModelDetector(small_model_card=args.validator, accelerator=accelerator)
-    dataloader_for_test = DataLoader(dataset, 
+    
+    dataloader_for_test = DataLoader(
+        dataset, 
         batch_size=args.batch_size, 
         num_workers=8,
         shuffle=False, 

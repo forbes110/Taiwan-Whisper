@@ -1,7 +1,13 @@
-# TODO: streaming == True?
 huggingface-cli login
 
-# Do KD
+# for check
+python create_student_model.py \
+  --teacher_checkpoint "openai/whisper-large-v2" \
+  --encoder_layers 1 \
+  --decoder_layers 2 \
+  --save_dir "/mnt/student_model"\
+  --mix_lang_emb
+
 accelerate launch run_distillation.py \
     --model_name_or_path "/mnt/student_model" \
     --teacher_model_name_or_path "openai/whisper-tiny" \

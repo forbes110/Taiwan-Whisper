@@ -8,7 +8,8 @@ from functools import partial
 from pypinyin import pinyin, lazy_pinyin, Style
 from g2p_en import G2p # too slow, should use lexicon instead
 import edit_distance
-lexicon_fpath = './prefiltering/lexicon.lst'
+
+lexicon_fpath = './lexicon.lst'
 
 def cal_complete_mer(ref_data, hyp_data):
     S, D, I, N = (0, 0, 0, 0)

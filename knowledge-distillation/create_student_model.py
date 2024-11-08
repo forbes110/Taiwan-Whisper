@@ -234,6 +234,8 @@ def init_student_model_from_teacher(
         student_model.push_to_hub(save_dir)
         processor.push_to_hub(save_dir)
         generation_config.push_to_hub(save_dir)
+        
+    print("Student model initialisation successful!")
 
 
 if __name__ == "__main__":

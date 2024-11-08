@@ -1,6 +1,8 @@
 # Pseudo-Labelling Steps
 
-1. Run `python3 filter_data.py` to make sure all sample rates are 16000 Hz.
+The steps in `all_in_one.sh` 
+
+1. Run `python3 resample.py` to make sure all sample rates are 16000 Hz.
 
 2. Given a directory with lots of audios(e.g., *.flac, *.wav, *.m4a), make a tsv file "dataset_path" as first-step dataset metadata by `make_paths.py`.
 for example: a `raw_data.csv` file with content:

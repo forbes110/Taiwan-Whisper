@@ -2,7 +2,7 @@ import os
 import glob
 import argparse
 from pydub import AudioSegment
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from tqdm import tqdm
 import multiprocessing
 import logging
@@ -23,6 +23,7 @@ def resample_audio(input_path, to_flac=True):
     Delete the original file if conversion is successful and to_flac is True.
     """
     try:
+        logging.debug(f"Processing {input_path}")
         start_time = time.time()
         base, ext = os.path.splitext(input_path)
         ext = ext.lower()
@@ -65,22 +66,13 @@ def resample_audio(input_path, to_flac=True):
     except Exception as e:
         return f"Error processing {input_path}: {str(e)}"
 
-def process_chunk(file_chunk, max_workers, to_flac, progress_bar):
-    """Process a chunk of files with a progress bar."""
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = {executor.submit(resample_audio, file, to_flac): file for file in file_chunk}
-        for future in as_completed(futures):
-            result = future.result()
-            logging.info(result)
-            progress_bar.update(1)  # Update progress bar
-
 def process_directory(input_path, to_flac=True, max_workers=None):
     """
-    Process audio files (both .m4a and .flac) in chunks using multiple processes and threads.
+    Process audio files (both .m4a and .flac) using multiple processes.
     The input_path can be a single file or a directory.
     """
     if max_workers is None:
-        max_workers = min(32, multiprocessing.cpu_count() * 2)
+        max_workers = min(32, multiprocessing.cpu_count() + 4)
 
     # Determine if input_path is a file or directory
     if os.path.isfile(input_path):
@@ -99,15 +91,14 @@ def process_directory(input_path, to_flac=True, max_workers=None):
     total_files = len(audio_files)
     logging.info(f"Found {total_files} audio files. Processing with {max_workers} workers...")
 
-    chunks = [audio_files[i:i + CHUNK_SIZE] for i in range(0, total_files, CHUNK_SIZE)]
-
-    with tqdm(total=total_files, desc="Processing files", unit="file") as pbar:
-        with multiprocessing.Pool(processes=min(len(chunks), multiprocessing.cpu_count())) as pool:
-            for chunk in chunks:
-                pool.apply_async(process_chunk, (chunk, max_workers, to_flac, pbar))
-
-            pool.close()
-            pool.join()
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        # Submit all tasks
+        futures = {executor.submit(resample_audio, file, to_flac): file for file in audio_files}
+        
+        # Use tqdm to display progress
+        for future in tqdm(as_completed(futures), total=total_files, desc="Processing files", unit="file"):
+            result = future.result()
+            logging.info(result)
 
 def parse_args():
     """Parse command-line arguments."""
@@ -127,7 +118,7 @@ def parse_args():
         "--max_workers",
         type=int,
         default=4,
-        help="Number of worker threads per process."
+        help="Number of worker processes."
     )
     return parser.parse_args()
 

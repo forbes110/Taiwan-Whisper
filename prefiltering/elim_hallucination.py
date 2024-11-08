@@ -70,20 +70,20 @@ def check_single_trans(input, skip_special_tokens=True, metric=None, threshold=0
         hyp = normalizer(hyp.strip())
         whisper_transcript = normalizer(whisper_transcript)
         
+    # check hallucination by comparing the original transcript and the valiadtor inferenced hyp transcript with MER
+    mer = metric.compute([whisper_transcript], [hyp], show_progress=False, empty_error_rate=empty_error_rate)
+    
     if mix_detection:
                 
         # check by ngram hallucination
         large_is_hallucinated = check_hallucination(whisper_transcript, n=6, threshold=5)
         if large_is_hallucinated:
-            return idx, True
+            return idx, True, (mer, whisper_transcript, hyp, trans_fpath, idx)
         
         # if large is not trivially hallucinated but the small one is, then the small one should not be used to perform examination
         small_is_hallucinated = check_hallucination(hyp, n=6, threshold=5)
         if small_is_hallucinated: 
-            return idx, False
-        
-    # check hallucination by comparing the original transcript and the valiadtor inferenced hyp transcript with MER
-    mer = metric.compute([whisper_transcript], [hyp], show_progress=False, empty_error_rate=empty_error_rate)
+            return idx, False, None
     
     if mer > threshold:
         return idx, True, (mer, whisper_transcript, hyp, trans_fpath, idx)
@@ -187,6 +187,7 @@ def whisper_checker(
     # Collect results from all processes
     for q in queues:
         results = q.get()
+        
         for idx, is_hallucinated, info in results:
             hallucinated_indices.append((idx, is_hallucinated))
             if info is not None:
@@ -197,6 +198,9 @@ def whisper_checker(
 
     # show the statistics
     hallucinated_only = [x[1] for x in hallucinated_indices]
+    
+    if not osp.exists(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
     
     # Write results to CSV after all processes complete
     with open(f'{output_dir}/hallucination_result.csv', mode='w', newline='') as file:
@@ -214,9 +218,10 @@ def whisper_checker(
         print("No output directory specified, not saving the hallucinated tsv...")
         return
     
-    if not osp.exists(output_dir):
-        os.makedirs(output_dir, exist_ok=True)
-        
+    with open(f'{output_dir}/hallucination_rate.txt', mode='w', newline='') as file:
+        file.write(f"Hallucination ratio: {sum(hallucinated_only) / len(hallucinated_indices)}\n")
+    
+
     output_base_fname = f"cleaned-threshold-{threshold}"
     
     if phonemize:

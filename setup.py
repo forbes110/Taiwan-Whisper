@@ -25,7 +25,7 @@ _additional_deps = [
     "av>=11",
     "absl-py==2.1.0",
     "aiohappyeyeballs==2.4.3",
-    "aiohttp==3.10.10",ㄎ 
+    "aiohttp==3.10.10",
     "aiosignal==1.3.1",
     "alembic==1.13.3",
     "antlr4-python3-runtime==4.9.3",

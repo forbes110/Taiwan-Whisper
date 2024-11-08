@@ -11,11 +11,11 @@ def generate_paths_csvs(root_dir):
         dir_path = os.path.join(root_dir, dir_name)
         
         if os.path.isdir(dir_path):
-            csv_path = os.path.join(root_dir, f"{dir_name}.csv")
+            csv_path = os.path.join(root_dir, f"{dir_name}.tsv")
             dir_audio_paths = []
             
             for filename in os.listdir(dir_path):
-                if filename.endswith('.flac'):
+                if filename.endswith('.flac') or filename.endswith('.m4a'):
                     audio_path = os.path.abspath(os.path.join(dir_path, filename))
                     dir_audio_paths.append([audio_path])
                     all_audio_paths.append([audio_path])
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     total_csv_files = generate_paths_csvs(args.root_dir)
-    print(f"Total CSV files generated: {total_csv_files}")
+    print(f"Total TSV files generated: {total_csv_files+1}")
     
     
 # for single dir, we use:

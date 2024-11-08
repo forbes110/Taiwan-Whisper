@@ -1,11 +1,8 @@
 python3 validator_inference.py \
-    --manifest /mnt/audio_paths.tsv \
-    --output_dir /mnt \
+    --manifest /mnt/metadata/FTV_selected.tsv \
+    --output_dir /mnt/validator_inference/FTV_selected \
     --validator openai/whisper-tiny \
     --batch_size 64
-
-
-
 
 # parser = argparse.ArgumentParser()
 # parser.add_argument(
