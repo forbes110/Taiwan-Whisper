@@ -1,5 +1,5 @@
 # Taiwan-Whisper
-Apply https://arxiv.org/html/2407.10603v1 with large-taiwan-mandarin-corpus.
+Apply https://arxiv.org/html/2407.10603v1 with large-taiwan-mandarin-corpus, alleviate hallucination and streaming performance degration.
 
 Run in following steps to reproduce(also check README in these directories):
 
