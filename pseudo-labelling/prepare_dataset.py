@@ -55,7 +55,6 @@ def segment_audio_by_trans(audio_trans_pair, segment_output_dir):
     try:
         audio_fpath, trans_fpath = audio_trans_pair
         print(f"Segmenting {audio_fpath} based on {trans_fpath}")
-
         file_name = osp.basename(audio_fpath).split('.')[0]
         audio_output_dir = osp.join(segment_output_dir, file_name)
         os.makedirs(audio_output_dir, exist_ok=True)
@@ -163,7 +162,11 @@ def segment_audio(audio_dir, trans_dir, segment_output_dir):
     audio_trans_pairs = []
     
     # Note that the file saved would be flac
-    audio_fpaths = glob.glob(osp.join(audio_dir, '*.m4a'))
+    print("trans_fpaths:", trans_fpaths)
+    print("audio_dir:", audio_dir)
+    audio_fpaths = glob.glob(osp.join(audio_dir, '*.m4a')) + glob.glob(osp.join(audio_dir, '*.flac'))
+    
+    print("audio_fpaths:", audio_fpaths)
 
     for audio_fpath in audio_fpaths:
         file_name = osp.basename(audio_fpath).split('.')[0]
@@ -176,6 +179,7 @@ def segment_audio(audio_dir, trans_dir, segment_output_dir):
         audio_trans_pairs.append((audio_fpath, trans_fpath))
 
     chunk_size = 100
+    os.makedirs(segment_output_dir, exist_ok=True)
     segment_func = partial(segment_audio_by_trans, segment_output_dir=segment_output_dir)
 
     for i in range(0, len(audio_trans_pairs), chunk_size):

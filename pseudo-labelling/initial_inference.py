@@ -10,7 +10,7 @@ import concurrent.futures
 
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
-# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 def parse_args():
     """Parse command-line arguments."""
@@ -20,11 +20,13 @@ def parse_args():
     parser.add_argument("--output_dir", type=str, default="/mnt/pseudo_label", help="Directory to save output CSV files.")
     parser.add_argument("--language", type=str, default="zh", help="Language code for transcription.")
     parser.add_argument("--log_progress", default=True, help="Display progress bars during transcription.")
-    parser.add_argument("--model_size", type=str, default="tiny", help="Size or path of the Whisper model.")
+    parser.add_argument("--model_card", type=str, default="tiny", help="Size or path of the Whisper model.")
     parser.add_argument("--compute_type", type=str, default="default", help="Compute type for CTranslate2 model.")
     parser.add_argument('--chunk_length', type=int, default=5, help='The length of audio segments. If it is not None, it will overwrite the default chunk_length of the FeatureExtractor.')
     parser.add_argument('--batch_size', type=int, default=64, help='The maximum number of parallel requests to model for decoding.')
     parser.add_argument("--num_workers", type=int, default=8, help="Number of workers for parallel processing.")
+    parser.add_argument("--repetition_penalty", type=int, default=3, help="Penalty of repetition")
+    parser.add_argument("--word_timestamps", type=bool, default=True, help="Whether to use record word timestamps.")
     
     return parser.parse_args()
 
@@ -33,7 +35,7 @@ def load_dataset(dataset_path):
     df = pd.read_csv(dataset_path, sep='\t')  # Assuming TSV as per the default path
     return df["audio_path"].tolist()
 
-def transcribe_audio_file(pipeline, audio_path, language="zh", log_progress=False, batch_size=64):
+def transcribe_audio_file(pipeline, audio_path, language="zh", log_progress=False, batch_size=64, chunk_length=5):
     """Transcribe a single audio file and return the results."""
     
     segments, _ = pipeline.transcribe(
@@ -41,6 +43,7 @@ def transcribe_audio_file(pipeline, audio_path, language="zh", log_progress=Fals
         task="transcribe",  # Set task to transcribe (no translation)
         log_progress=log_progress,
         batch_size=batch_size,
+        chunk_length=chunk_length
     )
     results = [
         {"start": f"{segment.start}", "end": f"{segment.end}", "text": segment.text}
@@ -49,21 +52,35 @@ def transcribe_audio_file(pipeline, audio_path, language="zh", log_progress=Fals
     return results
 
 
-def transcribe_audio_file_sequential(model, audio_path, language="zh", log_progress=False, chunk_length=5):
+def transcribe_audio_file_sequential(model, audio_path, language="zh", log_progress=False, chunk_length=5, word_timestamps=True):
     """Transcribe a single audio file using sequential inference and return the results."""
     segments, _ = model.transcribe(
         audio_path, 
         task="transcribe", 
         language=language,
-        multilingual=True,
-        output_language="hybrid",
+        multilingual=True, 
+        output_language="hybrid", 
         beam_size=5,
+        best_of=5,
         chunk_length=chunk_length,
+        condition_on_previous_text=True,
+        vad_filter=True,
+        repetition_penalty=3,
+        word_timestamps=word_timestamps
     )
-    results = [
-        {"start": f"{segment.start}", "end": f"{segment.end}", "text": segment.text}
-        for segment in segments
-    ]
+    
+    if word_timestamps:
+        results = [
+            {"start": f"{word.start}", "end": f"{word.end}", "text": word.word}
+            for segment in segments 
+            for word in segment.words
+        ]
+    else:
+        results = [
+            {"start": f"{segment.start}", "end": f"{segment.end}", "text": segment.text}
+            for segment in segments
+        ]
+
     return results
 
 def save_transcription_to_csv(transcriptions, output_csv):
@@ -74,19 +91,19 @@ def save_transcription_to_csv(transcriptions, output_csv):
         for item in transcriptions:
             writer.writerow(item)
 
-def worker_transcribe(audio_path, output_dir, model_size, compute_type, language, log_progress, chunk_length):
+def worker_transcribe(audio_path, output_dir, model_card, compute_type, language, log_progress, chunk_length, word_timestamps):
     """Worker function to transcribe a single audio file."""
     try:
         # Initialize the model inside the worker to avoid issues with multiprocessing
         model = WhisperModel(
-            model_size_or_path=model_size,
+            model_size_or_path=model_card,
             device="cuda" if torch.cuda.is_available() else "cpu",
             device_index=[0],
             compute_type=compute_type,
             num_workers=1  # Each worker handles one task at a time
         )
         
-        results = transcribe_audio_file_sequential(model, audio_path, language, log_progress, chunk_length=5)
+        results = transcribe_audio_file_sequential(model, audio_path, language, log_progress, chunk_length=5, word_timestamps=True)
         
         # Ensure the output directory exists
         os.makedirs(output_dir, exist_ok=True)
@@ -104,7 +121,7 @@ def worker_transcribe(audio_path, output_dir, model_size, compute_type, language
 def main():
     args = parse_args()
     print(args)
-    model_size = args.model_size
+    model_card = args.model_card
 
     """Main function to process all audio files listed in dataset.csv."""
     audio_files = load_dataset(args.dataset_path)
@@ -112,7 +129,7 @@ def main():
     # Initialize Whisper model and the pipeline
     if args.batched_mode:
         model = WhisperModel(
-            model_size_or_path=model_size,
+            model_size_or_path=model_card,
             device = "cuda" if torch.cuda.is_available() else "cpu",
             device_index = [0],
             compute_type=args.compute_type,
@@ -128,13 +145,11 @@ def main():
                 multilingual=True,
                 task="transcribe",
                 language="zh",
-                tokenizer=tokenizers.Tokenizer.from_pretrained(f"openai/whisper-{model_size}")
+                tokenizer=tokenizers.Tokenizer.from_pretrained(f"openai/whisper-{model_card}")
             )
             
             pipeline = BatchedInferencePipeline(
                 model, 
-                use_vad_model=True,  # Enable VAD model
-                chunk_length=args.chunk_length,   
                 language=args.language,
                 tokenizer=tokenizer
             )
@@ -160,7 +175,7 @@ def main():
                         language=args.language,
                         log_progress=args.log_progress,
                         batch_size=args.batch_size,
-                        
+                        chunk_length=args.chunk_length
                     )
                     # Save the transcription results as a separate CSV file
                     save_transcription_to_csv(results, output_csv)
@@ -178,11 +193,12 @@ def main():
                     worker_transcribe,
                     audio_path=audio_path,
                     output_dir=args.output_dir,
-                    model_size=args.model_size,
+                    model_card=args.model_card,
                     compute_type=args.compute_type,
                     language=args.language,
                     log_progress=args.log_progress,
-                    chunk_length=args.chunk_length
+                    chunk_length=args.chunk_length,
+                    word_timestamps=args.word_timestamps
                 )
                 for audio_path in audio_files
             ]
@@ -195,3 +211,10 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
+
+

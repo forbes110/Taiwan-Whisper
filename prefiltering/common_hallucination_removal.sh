@@ -4,6 +4,6 @@
 #     --execute_removal
 
 python3 common_hallucination_removal.py \
-    --original_tsv /mnt/metadata/FTV_selected.tsv \
-    --output_dir /mnt/common_hallucination_caught/FTV_selected \
+    --original_tsv /home/guest/b09705011/mnt/metadata/FTV_selected_seq.tsv \
+    --output_dir /home/guest/b09705011/mnt/common_hallucination_caught/FTV_selected_seqx \
     --execute_removal

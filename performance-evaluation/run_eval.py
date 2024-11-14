@@ -25,6 +25,7 @@ import tempfile
 import time
 from dataclasses import dataclass, field
 from typing import Optional
+from opencc import OpenCC
 
 import datasets
 import evaluate
@@ -57,8 +58,6 @@ require_version("datasets>=2.14.6", "To fix: `pip install --upgrade datasets`")
 logger = logging.getLogger(__name__)
 
 PIPELINE_BATCH_SIZE = 16
-
-
 
 @dataclass
 class DataTrainingArguments:
@@ -276,18 +275,28 @@ class DataTrainingArguments:
         default=False,
         metadata={"help": "Whether to mix the language embeddings in the pseudo-labelling model."},
     )
-
+    
+    save_dir: Optional[str] = field(
+        default=None,
+        metadata={"help": "Save predictions"},
+    )
 
 def write_metric(summary_writer, eval_metrics, step, prefix="eval"):
     for metric_name, value in eval_metrics.items():
         summary_writer.scalar(f"{prefix}/{metric_name}", value, step)
 
 
-def write_wandb_metric(wandb_logger, metrics, prefix):
+def write_wandb_metric(wandb_logger, metrics, prefix, save_dir=None):
     log_metrics = {}
     for k, v in metrics.items():
         log_metrics[f"{prefix}/{k}"] = v
     wandb_logger.log(log_metrics)
+    
+    if save_dir is not None:
+        os.makedirs(save_dir, exist_ok=True)
+        file_path = os.path.join(save_dir, f"{prefix}_metrics.json")
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(metrics, f, ensure_ascii=False, indent=4)
 
 
 def write_wandb_pred(
@@ -298,8 +307,9 @@ def write_wandb_pred(
     norm_label_str,
     wer_per_sample,
     prefix="eval",
+    save_dir=None
 ):
-    columns = ["WER", "Target", "Pred", "Norm Target", "Norm Pred"]
+    columns = ["WER", "Label", "Pred", "Norm Label", "Norm Pred"]
     # convert str data to a wandb compatible format
     str_data = [
         [wer_per_sample[i], label_str[i], pred_str[i], norm_label_str[i], norm_pred_str[i]]
@@ -310,6 +320,15 @@ def write_wandb_pred(
     wandb_logger.log(
         {f"{prefix}/predictions": wandb_logger.Table(columns=columns, data=str_data)},
     )
+    
+    if save_dir is not None:
+        os.makedirs(save_dir, exist_ok=True)
+        file_path = os.path.join(save_dir, f"{prefix}_predictions.csv")
+        import csv
+        with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(columns)
+            writer.writerows(str_data)
 
 
 def convert_dataset_str_to_list(
@@ -396,6 +415,8 @@ def main():
     # or by passing the --help flag to this script.
     # We now keep distinct sets of args, for a cleaner separation of concerns.
     parser = HfArgumentParser([DataTrainingArguments])
+    converter = OpenCC('s2t')
+
 
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         # If we pass only one argument to the script and it's the path to a json file,
@@ -749,14 +770,16 @@ def main():
 
         datasets_evaluated_progress_bar.write(f"Start benchmarking {split}...")
         result_iter = iter(result_datasets[split])
-        # TODO: use dataloader to speed up the process
+        
         # result_iter = DataLoader(result_datasets[split], batch_size=1, num_workers=8, pin_memory=True, shuffle=False, drop_last=False, )
         for result in tqdm(result_iter, desc="Samples", position=1):
             times_audio_total += result["length_in_s"]
             times_transcription_total += result["time"]
+            
             # ensure prompt is removed from the transcription (awaiting fix in Transformers)
+            # use converter to transform simplified chinese to traditional chinese in transcription
             if data_args.prompt_text is not None:
-                result["transcription"] = result["transcription"].replace(data_args.prompt_text, "")
+                result["transcription"] = converter.convert(result["transcription"].replace(data_args.prompt_text, ""))
             transcriptions.append(result["transcription"])
             references.append(result["reference"])
 
@@ -783,7 +806,7 @@ def main():
         wer_desc = " ".join([f"Eval {key}: {value} |" for key, value in stats.items()])
         datasets_evaluated_progress_bar.write(wer_desc)
 
-        write_wandb_metric(wandb_logger, stats, prefix=split)
+        write_wandb_metric(wandb_logger, stats, prefix=split, save_dir=data_args.save_dir)
 
         if data_args.log_predictions:
             write_wandb_pred(
@@ -794,6 +817,7 @@ def main():
                 norm_references,
                 wer_per_sample,
                 prefix=split,
+                save_dir=data_args.save_dir,
             )
 
         rtf_stats["times_audio_total"] += times_audio_total
@@ -806,7 +830,7 @@ def main():
 
     stats_dataset["all"] = all_stats
 
-    write_wandb_metric(wandb_logger, all_stats, prefix="all")
+    write_wandb_metric(wandb_logger, all_stats, prefix="all", save_dir=data_args.save_dir)
 
     benchmark_artifact = wandb.Artifact("Benchmark", type="datasets")
     with tempfile.TemporaryDirectory() as temp_dir:

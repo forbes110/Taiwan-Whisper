@@ -62,10 +62,16 @@ def check_single_trans(input, skip_special_tokens=True, metric=None, threshold=0
         
         for st in timestamp_tokens:
             whisper_transcript = whisper_transcript.replace(st, ' ')
-        whisper_transcript = whisper_transcript.strip().replace('  ', ' ')
+            
+        # print("\nwhisper_transcript-before:", whisper_transcript)
+        
+        # whisper_transcript = whisper_transcript.strip().replace('  ', '')
+        whisper_transcript = whisper_transcript.strip().replace(' ', '')
+        
+        # print("\nwhisper_transcript-after:", whisper_transcript)
         
     if normalizer is not None:
-        hyp = normalizer(hyp.strip())
+        hyp = normalizer(hyp.strip().replace(' ', ''))
         whisper_transcript = normalizer(whisper_transcript)
         
     # check hallucination by comparing the original transcript and the valiadtor inferenced hyp transcript with MER
@@ -83,20 +89,17 @@ def check_single_trans(input, skip_special_tokens=True, metric=None, threshold=0
         if small_is_hallucinated: 
             return idx, False, None
     
-    # TODO: just to check
-    if hyp == '主席':
-        print(f"\ninitial_inference:{whisper_transcript}\nvalidator_inference:{hyp}\ntrans_fpath:{trans_fpath}") 
-    
     if mer > threshold:
+        # print("\n-------------------------------------------------------------------------------------------------")
+        # print(f"\ninitial_inference:{whisper_transcript}\nvalidator_inference:{hyp}\ntrans_fpath:{trans_fpath}\nval_id:{idx}\n") 
+        # print("-------------------------------------------------------------------------------------------------\n")
         return idx, True, (mer, whisper_transcript, hyp, trans_fpath, idx)
     
     # uncomment to check the certified case
-    else:
-        # print(f"initial_inference:{whisper_transcript}\nvalidator_inference:{hyp}\n")  
-        if hyp == '主席':
-            print("\n-------------------------------------------------------------------------------------------------")
-            print(f"\ninitial_inference:{whisper_transcript}\nvalidator_inference:{hyp}\ntrans_fpath:{trans_fpath}") 
-            print("-------------------------------------------------------------------------------------------------\n")
+    # else:
+    #     print("\n-------------------------------------------------------------------------------------------------")
+    #     print(f"\ninitial_inference:{whisper_transcript}\nvalidator_inference:{hyp}\ntrans_fpath:{trans_fpath},\nmer: {mer}") 
+    #     print("-------------------------------------------------------------------------------------------------\n")
       
     return idx, False, None
 

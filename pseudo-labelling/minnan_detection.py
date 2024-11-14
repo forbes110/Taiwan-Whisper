@@ -1,78 +1,3 @@
-# import os
-# from pydub import AudioSegment
-# from transformers import AutoFeatureExtractor, Wav2Vec2ForSequenceClassification
-# import torch
-# import torchaudio
-# import io
-
-# def detect_minnan(audio_path):
-#     if not os.path.isfile(audio_path):
-#         print(f"Error: File '{audio_path}' does not exist.")
-#         return False, None
-
-#     try:
-#         # Load the MMS model for language identification
-#         mms_processor = AutoFeatureExtractor.from_pretrained("facebook/mms-lid-256")
-#         mms_model = Wav2Vec2ForSequenceClassification.from_pretrained("facebook/mms-lid-256")
-
-#         # Load and sample the audio
-#         audio = AudioSegment.from_file(audio_path)
-#         sampled_audio = audio.set_frame_rate(16000).set_channels(1)  # Ensure 16kHz and mono
-
-#         # Convert sampled audio to bytes-like object for in-memory processing
-#         audio_buffer = io.BytesIO()
-#         sampled_audio.export(audio_buffer, format="wav")
-#         audio_buffer.seek(0)  # Reset buffer position to the start
-
-#         # Load the audio waveform directly from the in-memory buffer
-#         waveform, sample_rate = torchaudio.load(audio_buffer)
-
-#         # Resample if necessary
-#         if sample_rate != mms_processor.sampling_rate:
-#             waveform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=mms_processor.sampling_rate)(waveform)
-
-#         # Process audio through MMS
-#         inputs = mms_processor(waveform.squeeze(), sampling_rate=mms_processor.sampling_rate, return_tensors="pt")
-#         with torch.no_grad():
-#             outputs = mms_model(**inputs).logits
-#         lang_id = torch.argmax(outputs, dim=-1)[0].item()
-#         detected_lang = mms_model.config.id2label[lang_id]
-
-#         # Check if detected language is Taiwanese Hokkien
-#         if detected_lang == "nan":  # 'nan' is the ISO 639-3 code for Taiwanese Hokkien
-#             return True, "nan"
-        
-#         else:
-#             return False, detected_lang
-
-#     except Exception as e:
-#         print(f"An error occurred while processing '{audio_path}': {e}")
-#         return False, None
-
-# def main():
-#     """
-#     Main function to handle user input and display results.
-#     """
-#     audio_file_1 = "/content/__9N8mzmiZ0_0-473264.flac" # no
-#     audio_file_2 = "/content/__ob4PLXPnw_51449808-51900688.flac" # yes
-#     audio_file_3 = "/content/__ob4PLXPnw_54217840-54662784.flac" # yes
-#     audio_file_4 = "/content/__ob4PLXPnw_54662784-55108848.flac" # yes
-
-#     for  audio_file in [audio_file_1, audio_file_2, audio_file_3, audio_file_4]:
-#         is_taiwanese, language_code = detect_minnan(audio_file)
-        
-#         print("------------------------------------------------------------------------------------------------------")
-#         if is_taiwanese:
-#             print(f"The audio file '{audio_file}' is detected as Taiwanese Hokkien (Language Code: {language_code}).")
-#         elif language_code:
-#             print(f"The audio file '{audio_file}' is NOT Taiwanese Hokkien. Detected Language Code: {language_code}.")
-#         else:
-#             print(f"Could not determine the language of the audio file '{audio_file}'.")
-#         print("------------------------------------------------------------------------------------------------------")
-        
-
-# if __name__ == "__main__":
-#     main()
 import os
 import argparse
 import csv
@@ -80,19 +5,20 @@ import torch
 import torchaudio
 from transformers import AutoFeatureExtractor, Wav2Vec2ForSequenceClassification
 from concurrent.futures import ProcessPoolExecutor, as_completed
+from tqdm import tqdm  # Import tqdm for the progress bar
 
-# Global variables to store model references
+# Global variables to store model and processor references
 mms_processor = None
 mms_model = None
 
-def init_model(processor, model):
+def init_model():
     """
-    Assign the pre-loaded model and processor to global variables for each worker process.
+    Load the model and processor in each worker process and assign to global variables.
     """
     global mms_processor
     global mms_model
-    mms_processor = processor
-    mms_model = model
+    mms_processor = AutoFeatureExtractor.from_pretrained("facebook/mms-lid-256")
+    mms_model = Wav2Vec2ForSequenceClassification.from_pretrained("facebook/mms-lid-256").to('cuda')
 
 def detect_minnan(audio_path):
     """
@@ -122,8 +48,18 @@ def detect_minnan(audio_path):
         if waveform.shape[0] > 1:
             waveform = waveform.mean(dim=0, keepdim=True)
 
-        # Process audio through MMS model
+        # Ensure that both model and input tensor are on the same device
+        device = next(mms_model.parameters()).device  # Get model device (GPU in this case)
+        
+        # Move waveform to the same device as the model
+        waveform = waveform.to(device)
+
+        # Process audio through the MMS model
         inputs = mms_processor(waveform.squeeze(), sampling_rate=16000, return_tensors="pt")
+
+        # Move inputs to the correct device
+        inputs = {key: value.to(device) for key, value in inputs.items()}
+
         with torch.no_grad():
             outputs = mms_model(**inputs).logits
         lang_id = torch.argmax(outputs, dim=-1).item()
@@ -138,7 +74,6 @@ def detect_minnan(audio_path):
     except Exception as e:
         print(f"Error processing '{audio_path}': {e}")
         return False, None
-
 
 def process_file(audio_path, to_remove):
     """
@@ -177,15 +112,11 @@ def main():
     Main function to handle user input and display results.
     """
     parser = argparse.ArgumentParser(description="Detect and optionally delete Taiwanese Hokkien (Min Nan) audio files.")
-    parser.add_argument("--directory", type=str, help="Path to the directory containing audio files.")
+    parser.add_argument("--directory", type=str, help="Path to the directory containing audio files.", required=True)
     parser.add_argument("--to_remove", action="store_true", help="If set, delete detected audio files and their corresponding text files.")
     parser.add_argument("--csv_output_dir", type=str, default="minnan_detected", help="Path to the output CSV file.")
     parser.add_argument("--num_workers", type=int, default=4, help="Number of parallel worker processes.")
     args = parser.parse_args()
-
-    # Load the model and processor once in the main process
-    processor = AutoFeatureExtractor.from_pretrained("facebook/mms-lid-256")
-    model = Wav2Vec2ForSequenceClassification.from_pretrained("facebook/mms-lid-256")
 
     # Collect all FLAC files in the specified directory
     flac_files = []
@@ -194,38 +125,44 @@ def main():
             if file.lower().endswith('.flac'):
                 flac_files.append(os.path.join(root, file))
 
-    print(f"Found {len(flac_files)} FLAC files in the directory '{args.directory}'.")
+    total_files = len(flac_files)
+    print(f"Found {total_files} FLAC files in the directory '{args.directory}'.")
 
     detected_files = []
 
-    # Use ProcessPoolExecutor for parallel processing, passing the pre-loaded model and processor
-    with ProcessPoolExecutor(max_workers=args.num_workers, initializer=init_model, initargs=(processor, model)) as executor:
+    # Use ProcessPoolExecutor for parallel processing with a progress bar
+    with ProcessPoolExecutor(max_workers=args.num_workers, initializer=init_model) as executor:
         # Submit all tasks
         future_to_file = {executor.submit(process_file, flac, args.to_remove): flac for flac in flac_files}
-        for future in as_completed(future_to_file):
-            flac = future_to_file[future]
-            try:
-                result = future.result()
-                if result['is_minnan']:
-                    detected_files.append(result)
-                print(f"Processed: {flac}")
-            except Exception as e:
-                print(f"Error processing '{flac}': {e}")
+        
+        # Initialize tqdm progress bar
+        with tqdm(total=total_files, desc="Processing files", unit="file") as pbar:
+            for future in as_completed(future_to_file):
+                flac = future_to_file[future]
+                try:
+                    result = future.result()
+                    if result['is_minnan']:
+                        detected_files.append(result)
+                except Exception as e:
+                    print(f"Error processing '{flac}': {e}")
+                finally:
+                    pbar.update(1)  # Update the progress bar for each completed task
 
     csv_output_dir = args.csv_output_dir
     if not os.path.exists(csv_output_dir):
         os.makedirs(csv_output_dir)
 
     # Write detected files to CSV
-    with open(f"{csv_output_dir}/minnan_detected.csv", mode='w', newline='', encoding='utf-8') as csv_file:
+    csv_file_path = os.path.join(csv_output_dir, "minnan_detected.csv")
+    with open(csv_file_path, mode='w', newline='', encoding='utf-8') as csv_file:
         fieldnames = ['audio_path', 'detected_lang', 'is_minnan', 'removed']
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
         for entry in detected_files:
             writer.writerow(entry)
 
-    print(f"Detection completed. Found {len(detected_files)} 'minnan' speech files.")
-    print(f"Results saved to '{args.csv_output}'.")
+    print(f"\nDetection completed. Found {len(detected_files)} 'minnan' speech files.")
+    print(f"Results saved to '{csv_file_path}'.")
 
 if __name__ == "__main__":
     main()

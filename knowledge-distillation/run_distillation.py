@@ -570,10 +570,11 @@ def log_pred(
         # wandb
         # convert str data to a wandb compatible format
         str_data = [[label_str[i], pred_str[i], norm_label_str[i], norm_pred_str[i]] for i in range(len(pred_str))]
+        
         # log as a table with the appropriate headers
         wandb_tracker.log_table(
             table_name=f"predictions/{prefix_pretty}-step-{cur_step_pretty}",
-            columns=["Target", "Pred", "Norm Target", "Norm Pred"],
+            columns=["Label", "Pred", "Norm Label", "Norm Pred"],
             data=str_data[:num_lines],
             step=step,
         )
@@ -581,7 +582,7 @@ def log_pred(
         local_path = os.path.join(output_dir, f"{prefix_pretty}_step_{cur_step_pretty}_predictions.csv")
         with open(local_path, mode="w", newline='', encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["Target", "Pred", "Norm Target", "Norm Pred"])
+            writer.writerow(["Label", "Pred", "Norm Label", "Norm Pred"])
             writer.writerows(str_data[:num_lines])
         
         
@@ -592,7 +593,7 @@ def log_pred(
         # log as a table with the appropriate headers
         wandb_tracker.log_table(
             table_name=f"incorrect_predictions/{prefix_pretty}-step-{cur_step_pretty}",
-            columns=["Target", "Pred", "Norm Target", "Norm Pred"],
+            columns=["Label", "Pred", "Norm Label", "Norm Pred"],
             data=str_data_incorrect[:num_lines],
             step=step,
         )
@@ -600,7 +601,7 @@ def log_pred(
         incorrect_path = os.path.join(output_dir, f"{prefix_pretty}_step_{cur_step_pretty}_incorrect.csv")
         with open(incorrect_path, mode="w", newline='', encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["Target", "Pred", "Norm Target", "Norm Pred"])
+            writer.writerow(["Label", "Pred", "Norm Label", "Norm Pred"])
             writer.writerows(str_data_incorrect[:num_lines])
 
 def check_hallucination(segment, **kwargs):
@@ -1256,15 +1257,21 @@ def main():
             2. Possibly filter the timestamp tokens from the token ids (depending on the timestamp probability)
             3. Possibly add prompt tokens if conditioning on previous text (depending on the conditioning probability)
         """
+        
+        # TODO: do data augmentation here
         # process audio input
         audio = [sample["array"] for sample in batch["audio"]]
-        inputs = feature_extractor(audio, sampling_rate=sampling_rate)
-        batch["input_features"] = inputs.input_features
-        batch["input_length"] = [len(sample) for sample in audio]
 
         # process text targets - for training these are the Whisper-generated pseudo-labels
         input_str_batched = batch[train_text_column_name]
         condition_on_prev_batched = batch.get("condition_on_prev", len(input_str_batched) * [None])
+        
+        # audio, input_str_batched, condition_on_prev_batched = data_aug(audio, input_str_batched, condition_on_prev_batched)
+        
+        batch["input_length"] = [len(sample) for sample in audio]
+        inputs = feature_extractor(audio, sampling_rate=sampling_rate)
+        batch["input_features"] = inputs.input_features
+        
         assert len(input_str_batched) == len(condition_on_prev_batched), "Batched inputs must be the same length"
         
         all_token_ids = []

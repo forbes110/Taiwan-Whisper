@@ -1,8 +1,8 @@
 python3 validator_inference.py \
-    --manifest /mnt/metadata/FTV_selected.tsv \
-    --output_dir /mnt/validator_inference/FTV_selected \
-    --validator openai/whisper-tiny \
-    --batch_size 64
+    --manifest /home/guest/b09705011/mnt/metadata/FTV_selected_seq.tsv \
+    --output_dir /home/guest/b09705011/mnt/validator_inference/FTV_selected_seq \
+    --validator openai/whisper-medium \
+    --batch_size 32
 
 # parser = argparse.ArgumentParser()
 # parser.add_argument(

@@ -8,7 +8,7 @@
 # done
 meta_dir="/mnt/data_pair"
 
-python3 gen_metadata.py /mnt/data_pair/FTV_selected \
+python3 gen_metadata.py /home/guest/b09705011/mnt/data_pair/FTV_selected_seq \
     --valid-percent 0 \
-    --dest /mnt/metadata \
-    --output_fname FTV_selected
+    --dest /home/guest/b09705011/mnt/metadata \
+    --output_fname FTV_selected_seq

@@ -1,12 +1,13 @@
 import os
 import glob
 import argparse
-from pydub import AudioSegment
+import subprocess
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from tqdm import tqdm
 import multiprocessing
 import logging
 import time
+import shutil
 
 # Configure logging
 logging.basicConfig(
@@ -15,12 +16,13 @@ logging.basicConfig(
 )
 
 TARGET_SAMPLE_RATE = 16000  # Target sample rate
-CHUNK_SIZE = 100  # Process files in chunks for better memory management
 
 def resample_audio(input_path, to_flac=True):
     """
-    Resample audio files to 16kHz. If to_flac is True, convert to FLAC format.
-    Delete the original file if conversion is successful and to_flac is True.
+    Resample audio files to 16kHz using ffmpeg. 
+    If to_flac is True, convert to FLAC format.
+    Handles output paths to avoid overwriting input files.
+    Optionally replaces the original file after successful processing.
     """
     try:
         logging.debug(f"Processing {input_path}")
@@ -31,36 +33,70 @@ def resample_audio(input_path, to_flac=True):
         # Determine the new file path based on the conversion option
         if to_flac:
             if ext == ".flac":
-                output_path = input_path  # Already FLAC
+                # Input is already FLAC, resample and write to a temporary file
+                output_path = base + "_resampled.flac"
             else:
+                # Convert to FLAC
                 output_path = base + ".flac"
         else:
-            output_path = input_path  # Overwrite the original file
-            format = ext.lstrip('.')  # Extract format from extension
-            if format == 'm4a':
-                format = 'mp4'  # pydub uses 'mp4' for .m4a files
+            # Resample without converting to FLAC
+            # Create a new file name to avoid overwriting
+            output_path = base + "_resampled" + ext
 
-        # Load audio file using pydub
-        audio = AudioSegment.from_file(input_path)
+        # Build the ffmpeg command
+        ffmpeg_command = [
+            "ffmpeg",
+            "-y",  # Overwrite output files without asking
+            "-i", input_path,
+            "-ar", str(TARGET_SAMPLE_RATE),  # Set target sample rate
+            "-ac", "1"  # Set number of audio channels to 1 (mono)
+        ]
 
-        # Resample if necessary
-        if audio.frame_rate != TARGET_SAMPLE_RATE:
-            logging.info(f"Resampling {input_path} from {audio.frame_rate} to {TARGET_SAMPLE_RATE} Hz")
-            audio = audio.set_frame_rate(TARGET_SAMPLE_RATE)
-
-        # Export the audio
         if to_flac:
-            audio.export(output_path, format="flac", parameters=["-compression_level", "8"])
+            ffmpeg_command += [
+                "-c:a", "flac",
+                "-compression_level", "8",
+                output_path
+            ]
         else:
-            audio.export(output_path, format=format)
+            # Determine codec based on format
+            if ext in ['.m4a', '.mp4']:
+                codec = "aac"
+            elif ext == '.wav':
+                codec = "pcm_s16le"
+            else:
+                codec = "copy"  # Use stream copy for other formats
+            ffmpeg_command += [
+                "-c:a", codec,
+                output_path
+            ]
 
-        # Verify the new file and clean up the original
+        # Execute the ffmpeg command
+        result = subprocess.run(ffmpeg_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        # Check if ffmpeg command was successful
+        if result.returncode != 0:
+            error_message = result.stderr.decode('utf-8')
+            logging.error(f"ffmpeg error processing {input_path}: {error_message}")
+            return f"Error processing {input_path}: {error_message}"
+
+        # Verify the new file
         if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
-            if to_flac and input_path != output_path:
-                os.remove(input_path)  # Delete original file
+            # Replace the original file with the new file if needed
+            if to_flac and ext == ".flac":
+                # If resampling a FLAC file, replace it with the resampled version
+                shutil.move(output_path, input_path)
+            elif to_flac and ext != ".flac":
+                # If converting to FLAC from another format, delete the original
+                os.remove(input_path)
+            elif not to_flac:
+                # If not converting to FLAC, replace the original file
+                shutil.move(output_path, input_path)
+
             processing_time = time.time() - start_time
-            return f"Processed: {output_path} ({processing_time:.2f}s)"
+            return f"Processed: {input_path} ({processing_time:.2f}s)"
         else:
+            logging.error(f"Output file not created properly for {input_path}")
             return f"Error: Output file not created properly for {input_path}"
 
     except Exception as e:
@@ -92,6 +128,7 @@ def process_directory(input_path, to_flac=True, max_workers=None):
     logging.info(f"Found {total_files} audio files. Processing with {max_workers} workers...")
 
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
+        
         # Submit all tasks
         futures = {executor.submit(resample_audio, file, to_flac): file for file in audio_files}
         

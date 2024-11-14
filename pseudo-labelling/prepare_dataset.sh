@@ -6,13 +6,17 @@
 #     --segment_output_dir /mnt/data_pair \
 #     --nprocs 8
     
+# python3 prepare_dataset.py \
+#     --audio_dir /mnt/dataset_1T/FTV_selected \
+#     --trans_dir /mnt/pseudo_label/FTV_selected \
+#     --segment_output_dir /mnt/data_pair/FTV_selected \
+#     --nprocs 8
+
 python3 prepare_dataset.py \
-    --audio_dir /mnt/dataset_1T/FTV_selected \
-    --trans_dir /mnt/pseudo_label/FTV_selected \
-    --segment_output_dir /mnt/data_pair/FTV_selected \
+    --audio_dir /home/guest/b09705011/mnt/dataset_1T/FTV_selected_seq \
+    --trans_dir /home/guest/b09705011/mnt/pseudo_label/FTV_selected_seq \
+    --segment_output_dir /home/guest/b09705011/mnt/data_pair/FTV_selected_seq \
     --nprocs 8
-
-
 
 # case for for each dir in meta_dir
 # meta_dir="/path/to/your/meta_dir"  # Replace with your actual path
