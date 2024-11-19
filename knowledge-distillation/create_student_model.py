@@ -116,6 +116,7 @@ def init_student_model_from_teacher(
     cache_dir=None,
     subfolder="",
     mix_lang_emb=False,
+    torch_dtype="float16"
 ):
     if decoder_layers_numbers is not None and len(decoder_layers_numbers) != decoder_layers:
         raise ValueError(
@@ -127,6 +128,7 @@ def init_student_model_from_teacher(
         cache_dir=cache_dir,
         subfolder=subfolder,
         low_cpu_mem_usage=True,
+        torch_dtype=torch_dtype
     )
     processor = WhisperProcessor.from_pretrained(teacher_checkpoint)
     generation_config = GenerationConfig.from_pretrained(teacher_checkpoint)
@@ -143,6 +145,7 @@ def init_student_model_from_teacher(
         {
             "encoder_layers": encoder_layers if encoder_layers is not None else teacher_encoder_layers,
             "decoder_layers": decoder_layers,
+            "torch_dtype": torch_dtype,
         }
     )
 

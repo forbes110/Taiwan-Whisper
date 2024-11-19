@@ -56,9 +56,9 @@
 
 
 accelerate launch run_distillation.py \
-    --model_name_or_path "/home/guest/b09705011/mnt/student_model" \
-    --teacher_model_name_or_path "openai/whisper-tiny" \
-    --train_dataset_manifest "/home/guest/b09705011/mnt/cleaned/FTV_selected_seq/cleaned-threshold-0.4-phonemized-mix_detection.tsv" \
+    --model_name_or_path "/mnt/home/ntuspeechlabtaipei1/forbes/student_model" \
+    --teacher_model_name_or_path "openai/whisper-medium" \
+    --train_dataset_manifest "/mnt/home/ntuspeechlabtaipei1/forbes/cleaned/Awater/cleaned-threshold-0.5-phonemized-mix_detection.tsv" \
     --train_dataset_name "" \
     --train_split_name "" \
     --text_column_name "" \
@@ -78,15 +78,15 @@ accelerate launch run_distillation.py \
     --task "transcribe" \
     --logging_steps 100 \
     --save_total_limit 20 \
-    --max_steps 10 \
+    --max_steps 100 \
     --per_device_train_batch_size 8 \
     --per_device_eval_batch_size 8 \
     --dataloader_num_workers 8 \
     --preprocessing_num_workers 8 \
     --ddp_timeout 7200 \
     --dtype "bfloat16" \
-    --attn_implementation "sdpa" \
-    --output_dir "/home/guest/b09705011/mnt/evaluation_result" \
+    --attn_implementation "flash_attention_2" \
+    --output_dir "/mnt/home/ntuspeechlabtaipei1/forbes/evaluation_result" \
     --do_train \
     --do_eval \
     --gradient_checkpointing \
@@ -99,5 +99,16 @@ accelerate launch run_distillation.py \
     --skip_audio_length_filtering True \
     --gradient_accumulation_steps 2 \
     --dataloader_prefetch_factor 2 
-    # --push_to_hub \ 
+    #\
+    # > full_output.log 2>&1
 
+
+
+
+
+
+
+
+
+
+# flash_attn_2

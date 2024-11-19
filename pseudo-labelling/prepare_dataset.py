@@ -69,7 +69,6 @@ def segment_audio_by_trans(audio_trans_pair, segment_output_dir):
         prev_seg_end_frame = int(segments[0][0] * SAMPLE_RATE)
         prev_text = ""
         cur_text = ""
-        
 
         """
         segments takes the format
@@ -155,6 +154,7 @@ def segment_audio(audio_dir, trans_dir, segment_output_dir):
     pseudo_label_fpath = {}
 
     trans_fpaths = glob.glob(osp.join(trans_dir, '*.csv'))
+    
     for trans_fpath in tqdm(trans_fpaths, desc="Parsing transcriptions..."):
         file_name = osp.basename(trans_fpath).split('.')[0]
         pseudo_label_fpath[file_name] = trans_fpath
@@ -162,11 +162,11 @@ def segment_audio(audio_dir, trans_dir, segment_output_dir):
     audio_trans_pairs = []
     
     # Note that the file saved would be flac
-    print("trans_fpaths:", trans_fpaths)
-    print("audio_dir:", audio_dir)
+    # print("trans_fpaths:", trans_fpaths)
+    # print("audio_dir:", audio_dir) 
     audio_fpaths = glob.glob(osp.join(audio_dir, '*.m4a')) + glob.glob(osp.join(audio_dir, '*.flac'))
     
-    print("audio_fpaths:", audio_fpaths)
+    # print("audio_fpaths:", audio_fpaths)
 
     for audio_fpath in audio_fpaths:
         file_name = osp.basename(audio_fpath).split('.')[0]
@@ -203,7 +203,7 @@ if __name__ == "__main__":
     parser.add_argument("--trans_dir", required=True, help="Root directory of transcriptions")
     parser.add_argument("--segment_output_dir", required=True, help="Segment output directory")
     parser.add_argument("--audio_dir", required=True, help="Audio directory")
-    parser.add_argument("--nprocs", type=int, default=8, help="Number of processes for parallel segmentation")
+    parser.add_argument("--nprocs", type=int, default=1, help="Number of processes for parallel segmentation")
     args = parser.parse_args()
 
     main(args)

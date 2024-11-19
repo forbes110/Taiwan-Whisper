@@ -47,7 +47,7 @@ from transformers.models.whisper.english_normalizer import EnglishTextNormalizer
 from transformers.models.whisper.modeling_whisper import WhisperForCausalLM
 from transformers.utils import check_min_version, is_accelerate_available
 from transformers.utils.versions import require_version
-
+import csv
 from evaluation import MixErrorRate
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
@@ -295,6 +295,7 @@ def write_wandb_metric(wandb_logger, metrics, prefix, save_dir=None):
     if save_dir is not None:
         os.makedirs(save_dir, exist_ok=True)
         file_path = os.path.join(save_dir, f"{prefix}_metrics.json")
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(metrics, f, ensure_ascii=False, indent=4)
 
@@ -324,7 +325,8 @@ def write_wandb_pred(
     if save_dir is not None:
         os.makedirs(save_dir, exist_ok=True)
         file_path = os.path.join(save_dir, f"{prefix}_predictions.csv")
-        import csv
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
         with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(columns)
@@ -416,7 +418,6 @@ def main():
     # We now keep distinct sets of args, for a cleaner separation of concerns.
     parser = HfArgumentParser([DataTrainingArguments])
     converter = OpenCC('s2t')
-
 
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         # If we pass only one argument to the script and it's the path to a json file,

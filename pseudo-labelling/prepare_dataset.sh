@@ -13,9 +13,9 @@
 #     --nprocs 8
 
 python3 prepare_dataset.py \
-    --audio_dir /home/guest/b09705011/mnt/dataset_1T/FTV_selected_seq \
-    --trans_dir /home/guest/b09705011/mnt/pseudo_label/FTV_selected_seq \
-    --segment_output_dir /home/guest/b09705011/mnt/data_pair/FTV_selected_seq \
+    --audio_dir /home/guest/b09705011/mnt/dataset_sr_16k/Awater \
+    --trans_dir /home/guest/b09705011/mnt/pseudo_label/Awater \
+    --segment_output_dir /home/guest/b09705011/mnt/data_pair/Awater \
     --nprocs 8
 
 # case for for each dir in meta_dir
@@ -31,3 +31,9 @@ python3 prepare_dataset.py \
 
 
 
+
+# python3 prepare_dataset.py \
+#     --audio_dir /mnt/home/ntuspeechlabtaipei1/forbes/dataset_meta/Awater \
+#     --trans_dir /mnt/home/ntuspeechlabtaipei1/forbes/pseudo_label/Awater \
+#     --segment_output_dir  /mnt/home/ntuspeechlabtaipei1/forbes/data_pair/Awater \
+#     --nprocs 8

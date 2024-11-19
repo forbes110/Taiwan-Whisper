@@ -465,6 +465,7 @@ class DataCollatorSpeechSeq2SeqWithPadding:
     input_padding: Union[bool, str] = "max_length"
     target_padding: Union[bool, str] = "max_length"
     max_target_length: Optional[int] = None
+    dtype: torch.dtype = torch.bfloat16
 
     def __call__(self, features: List[Dict[str, Union[List[int], np.ndarray]]]) -> Dict[str, np.ndarray]:
         # split inputs and labels since they have to be of different lengths and need
@@ -480,6 +481,9 @@ class DataCollatorSpeechSeq2SeqWithPadding:
             padding=self.input_padding,
             return_tensors="pt",
         )
+        
+        # TODO: added
+        batch["input_features"] = batch["input_features"].to(dtype=self.dtype)
 
         labels_batch = self.processor.tokenizer.pad(
             label_features,
@@ -534,7 +538,10 @@ def log_metric(
 
 def mix_language_embeddings(model: WhisperForConditionalGeneration, tokenizer, languages=['zh', 'en'], target_language='zh', weights=None):
     target_id = tokenizer.convert_tokens_to_ids(f"<|{target_language}|>")
-    new_embedding = torch.zeros(model.model.decoder.embed_tokens.weight[target_id].shape, dtype=model.model.decoder.embed_tokens.weight[target_id].dtype)
+    new_embedding = torch.zeros(
+        model.model.decoder.embed_tokens.weight[target_id].shape, 
+        dtype="bfloat16")
+    
     if weights is None:
         weights = [1/len(languages)] * len(languages)
     with torch.no_grad():
@@ -1070,6 +1077,7 @@ def main():
         subfolder=model_args.subfolder,
         token=model_args.token,
         low_cpu_mem_usage=True,
+        torch_dtype=teacher_dtype,
         attn_implementation=model_args.attn_implementation,
     )
 
@@ -1524,6 +1532,7 @@ def main():
         input_padding="longest",
         target_padding="max_length",
         max_target_length=max_label_length,
+        dtype=teacher_dtype
     )
 
     # 14. Define generation arguments - we need to do this before we wrap the models in DDP

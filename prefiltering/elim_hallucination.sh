@@ -7,3 +7,15 @@ python elim_hallucination.py \
     --num_workers 16 \
     --phonemize \
     --mix_detection  
+
+
+
+python elim_hallucination.py \
+    --original_tsv /mnt/home/ntuspeechlabtaipei1/forbes/metadata/Awater.tsv \
+    --type whisper \
+    --hyps_txt /mnt/home/ntuspeechlabtaipei1/forbes/validator_inference/Awater/validator_inference.txt \
+    --output_dir /mnt/home/ntuspeechlabtaipei1/forbes/cleaned/Awater/ \
+    --threshold 0.5 \
+    --num_workers 16 \
+    --phonemize \
+    --mix_detection  

@@ -1,0 +1,133 @@
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/Awater', segment_output_dir='/home/guest/b09705011/mnt/data_pair/Awater', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/Awater', nprocs=8)
+trans_fpaths: ['/home/guest/b09705011/mnt/pseudo_label/Awater/_cSJtwJq3D0.csv', '/home/guest/b09705011/mnt/pseudo_label/Awater/_UhH02mDsaE.csv', '/home/guest/b09705011/mnt/pseudo_label/Awater/_YGJhT3Luo8.csv', '/home/guest/b09705011/mnt/pseudo_label/Awater/_HyE_2DAe10.csv']
+audio_dir: /home/guest/b09705011/mnt/dataset_sr_16k/Awater
+audio_fpaths: ['/home/guest/b09705011/mnt/dataset_sr_16k/Awater/_HyE_2DAe10.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/Awater/_cSJtwJq3D0.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/Awater/_YGJhT3Luo8.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/Awater/_UhH02mDsaE.m4a']
+Processing chunk 0-4 with 8 processes...
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/Awater/_HyE_2DAe10.m4a based on /home/guest/b09705011/mnt/pseudo_label/Awater/_HyE_2DAe10.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/Awater/_UhH02mDsaE.m4a based on /home/guest/b09705011/mnt/pseudo_label/Awater/_UhH02mDsaE.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/Awater/_cSJtwJq3D0.m4a based on /home/guest/b09705011/mnt/pseudo_label/Awater/_cSJtwJq3D0.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/Awater/_YGJhT3Luo8.m4a based on /home/guest/b09705011/mnt/pseudo_label/Awater/_YGJhT3Luo8.csv
+Done
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/Awater.tsv', segment_output_dir='/home/guest/b09705011/mnt/data_pair/Awater.tsv', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/Awater.tsv', nprocs=8)
+trans_fpaths: []
+audio_dir: /home/guest/b09705011/mnt/dataset_sr_16k/Awater.tsv
+audio_fpaths: []
+Done
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/raw_data.tsv', segment_output_dir='/home/guest/b09705011/mnt/data_pair/raw_data.tsv', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/raw_data.tsv', nprocs=8)
+trans_fpaths: []
+audio_dir: /home/guest/b09705011/mnt/dataset_sr_16k/raw_data.tsv
+audio_fpaths: []
+Done
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/TKstorytw', segment_output_dir='/home/guest/b09705011/mnt/data_pair/TKstorytw', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw', nprocs=8)
+trans_fpaths: ['/home/guest/b09705011/mnt/pseudo_label/TKstorytw/7rtnIbor2RA.csv', '/home/guest/b09705011/mnt/pseudo_label/TKstorytw/bEJkm8Z1reM.csv', '/home/guest/b09705011/mnt/pseudo_label/TKstorytw/AQBPFmcwGjo.csv', '/home/guest/b09705011/mnt/pseudo_label/TKstorytw/Be8bz-JJpoQ.csv', '/home/guest/b09705011/mnt/pseudo_label/TKstorytw/0UXTCR0Rjco.csv']
+audio_dir: /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw
+audio_fpaths: ['/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/Be8bz-JJpoQ.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/7rtnIbor2RA.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/0UXTCR0Rjco.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/AQBPFmcwGjo.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/bEJkm8Z1reM.m4a']
+Processing chunk 0-5 with 8 processes...
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/Be8bz-JJpoQ.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/Be8bz-JJpoQ.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/7rtnIbor2RA.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/7rtnIbor2RA.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/0UXTCR0Rjco.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/0UXTCR0Rjco.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/AQBPFmcwGjo.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/AQBPFmcwGjo.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/bEJkm8Z1reM.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/bEJkm8Z1reM.csv
+Done
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/TKstorytw.tsv', segment_output_dir='/home/guest/b09705011/mnt/data_pair/TKstorytw.tsv', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw.tsv', nprocs=8)
+trans_fpaths: []
+audio_dir: /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw.tsv
+audio_fpaths: []
+Done
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/withmoney', segment_output_dir='/home/guest/b09705011/mnt/data_pair/withmoney', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/withmoney', nprocs=8)
+trans_fpaths: ['/home/guest/b09705011/mnt/pseudo_label/withmoney/0jIyMQ7vOrA.csv', '/home/guest/b09705011/mnt/pseudo_label/withmoney/zjWMXERyA44.csv', '/home/guest/b09705011/mnt/pseudo_label/withmoney/1q8AOdVd5tI.csv', '/home/guest/b09705011/mnt/pseudo_label/withmoney/Zmn_5sZopPI.csv']
+audio_dir: /home/guest/b09705011/mnt/dataset_sr_16k/withmoney
+audio_fpaths: ['/home/guest/b09705011/mnt/dataset_sr_16k/withmoney/1q8AOdVd5tI.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/withmoney/zjWMXERyA44.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/withmoney/Zmn_5sZopPI.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/withmoney/0jIyMQ7vOrA.m4a']
+Processing chunk 0-4 with 8 processes...
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/0jIyMQ7vOrA.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/0jIyMQ7vOrA.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/zjWMXERyA44.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/zjWMXERyA44.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/1q8AOdVd5tI.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/1q8AOdVd5tI.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/Zmn_5sZopPI.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/Zmn_5sZopPI.csv
+Done
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/withmoney.tsv', segment_output_dir='/home/guest/b09705011/mnt/data_pair/withmoney.tsv', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/withmoney.tsv', nprocs=8)
+trans_fpaths: []
+audio_dir: /home/guest/b09705011/mnt/dataset_sr_16k/withmoney.tsv
+audio_fpaths: []
+Done
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/Awater', segment_output_dir='/home/guest/b09705011/mnt/data_pair/Awater', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/Awater/', nprocs=1)
+trans_fpaths: ['/home/guest/b09705011/mnt/pseudo_label/Awater/_cSJtwJq3D0.csv', '/home/guest/b09705011/mnt/pseudo_label/Awater/_UhH02mDsaE.csv', '/home/guest/b09705011/mnt/pseudo_label/Awater/_YGJhT3Luo8.csv', '/home/guest/b09705011/mnt/pseudo_label/Awater/_HyE_2DAe10.csv']
+audio_dir: /home/guest/b09705011/mnt/dataset_sr_16k/Awater/
+audio_fpaths: ['/home/guest/b09705011/mnt/dataset_sr_16k/Awater/_HyE_2DAe10.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/Awater/_cSJtwJq3D0.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/Awater/_YGJhT3Luo8.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/Awater/_UhH02mDsaE.m4a']
+Processing chunk 0-4 with 1 processes...
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/Awater/_HyE_2DAe10.m4a based on /home/guest/b09705011/mnt/pseudo_label/Awater/_HyE_2DAe10.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/Awater/_cSJtwJq3D0.m4a based on /home/guest/b09705011/mnt/pseudo_label/Awater/_cSJtwJq3D0.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/Awater/_YGJhT3Luo8.m4a based on /home/guest/b09705011/mnt/pseudo_label/Awater/_YGJhT3Luo8.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/Awater/_UhH02mDsaE.m4a based on /home/guest/b09705011/mnt/pseudo_label/Awater/_UhH02mDsaE.csv
+Done
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/TKstorytw', segment_output_dir='/home/guest/b09705011/mnt/data_pair/TKstorytw', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/', nprocs=1)
+trans_fpaths: ['/home/guest/b09705011/mnt/pseudo_label/TKstorytw/7rtnIbor2RA.csv', '/home/guest/b09705011/mnt/pseudo_label/TKstorytw/bEJkm8Z1reM.csv', '/home/guest/b09705011/mnt/pseudo_label/TKstorytw/AQBPFmcwGjo.csv', '/home/guest/b09705011/mnt/pseudo_label/TKstorytw/Be8bz-JJpoQ.csv', '/home/guest/b09705011/mnt/pseudo_label/TKstorytw/0UXTCR0Rjco.csv']
+audio_dir: /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/
+audio_fpaths: ['/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/Be8bz-JJpoQ.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/7rtnIbor2RA.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/0UXTCR0Rjco.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/AQBPFmcwGjo.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/bEJkm8Z1reM.m4a']
+Processing chunk 0-5 with 1 processes...
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/Be8bz-JJpoQ.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/Be8bz-JJpoQ.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/7rtnIbor2RA.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/7rtnIbor2RA.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/0UXTCR0Rjco.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/0UXTCR0Rjco.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/AQBPFmcwGjo.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/AQBPFmcwGjo.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/bEJkm8Z1reM.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/bEJkm8Z1reM.csv
+Done
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/withmoney', segment_output_dir='/home/guest/b09705011/mnt/data_pair/withmoney', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/withmoney/', nprocs=1)
+trans_fpaths: ['/home/guest/b09705011/mnt/pseudo_label/withmoney/0jIyMQ7vOrA.csv', '/home/guest/b09705011/mnt/pseudo_label/withmoney/zjWMXERyA44.csv', '/home/guest/b09705011/mnt/pseudo_label/withmoney/1q8AOdVd5tI.csv', '/home/guest/b09705011/mnt/pseudo_label/withmoney/Zmn_5sZopPI.csv']
+audio_dir: /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/
+audio_fpaths: ['/home/guest/b09705011/mnt/dataset_sr_16k/withmoney/1q8AOdVd5tI.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/withmoney/zjWMXERyA44.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/withmoney/Zmn_5sZopPI.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/withmoney/0jIyMQ7vOrA.m4a']
+Processing chunk 0-4 with 1 processes...
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/1q8AOdVd5tI.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/1q8AOdVd5tI.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/zjWMXERyA44.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/zjWMXERyA44.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/Zmn_5sZopPI.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/Zmn_5sZopPI.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/0jIyMQ7vOrA.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/0jIyMQ7vOrA.csv
+Done
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/Awater', segment_output_dir='/home/guest/b09705011/mnt/data_pair/Awater', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/Awater/', nprocs=2)
+trans_fpaths: ['/home/guest/b09705011/mnt/pseudo_label/Awater/_cSJtwJq3D0.csv', '/home/guest/b09705011/mnt/pseudo_label/Awater/_UhH02mDsaE.csv', '/home/guest/b09705011/mnt/pseudo_label/Awater/_YGJhT3Luo8.csv', '/home/guest/b09705011/mnt/pseudo_label/Awater/_HyE_2DAe10.csv']
+audio_dir: /home/guest/b09705011/mnt/dataset_sr_16k/Awater/
+audio_fpaths: ['/home/guest/b09705011/mnt/dataset_sr_16k/Awater/_HyE_2DAe10.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/Awater/_cSJtwJq3D0.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/Awater/_YGJhT3Luo8.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/Awater/_UhH02mDsaE.m4a']
+Processing chunk 0-4 with 2 processes...
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/Awater/_cSJtwJq3D0.m4a based on /home/guest/b09705011/mnt/pseudo_label/Awater/_cSJtwJq3D0.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/Awater/_UhH02mDsaE.m4a based on /home/guest/b09705011/mnt/pseudo_label/Awater/_UhH02mDsaE.csv
+Done
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/TKstorytw', segment_output_dir='/home/guest/b09705011/mnt/data_pair/TKstorytw', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/', nprocs=2)
+trans_fpaths: ['/home/guest/b09705011/mnt/pseudo_label/TKstorytw/7rtnIbor2RA.csv', '/home/guest/b09705011/mnt/pseudo_label/TKstorytw/bEJkm8Z1reM.csv', '/home/guest/b09705011/mnt/pseudo_label/TKstorytw/AQBPFmcwGjo.csv', '/home/guest/b09705011/mnt/pseudo_label/TKstorytw/Be8bz-JJpoQ.csv', '/home/guest/b09705011/mnt/pseudo_label/TKstorytw/0UXTCR0Rjco.csv']
+audio_dir: /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/
+audio_fpaths: ['/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/Be8bz-JJpoQ.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/7rtnIbor2RA.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/0UXTCR0Rjco.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/AQBPFmcwGjo.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/bEJkm8Z1reM.m4a']
+Processing chunk 0-5 with 2 processes...
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/7rtnIbor2RA.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/7rtnIbor2RA.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/AQBPFmcwGjo.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/AQBPFmcwGjo.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/Be8bz-JJpoQ.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/Be8bz-JJpoQ.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/0UXTCR0Rjco.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/0UXTCR0Rjco.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/bEJkm8Z1reM.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/bEJkm8Z1reM.csv
+Done
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/withmoney', segment_output_dir='/home/guest/b09705011/mnt/data_pair/withmoney', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/withmoney/', nprocs=2)
+trans_fpaths: ['/home/guest/b09705011/mnt/pseudo_label/withmoney/0jIyMQ7vOrA.csv', '/home/guest/b09705011/mnt/pseudo_label/withmoney/zjWMXERyA44.csv', '/home/guest/b09705011/mnt/pseudo_label/withmoney/1q8AOdVd5tI.csv', '/home/guest/b09705011/mnt/pseudo_label/withmoney/Zmn_5sZopPI.csv']
+audio_dir: /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/
+audio_fpaths: ['/home/guest/b09705011/mnt/dataset_sr_16k/withmoney/1q8AOdVd5tI.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/withmoney/zjWMXERyA44.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/withmoney/Zmn_5sZopPI.m4a', '/home/guest/b09705011/mnt/dataset_sr_16k/withmoney/0jIyMQ7vOrA.m4a']
+Processing chunk 0-4 with 2 processes...
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/1q8AOdVd5tI.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/1q8AOdVd5tI.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/0jIyMQ7vOrA.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/0jIyMQ7vOrA.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/zjWMXERyA44.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/zjWMXERyA44.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/Zmn_5sZopPI.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/Zmn_5sZopPI.csv
+Done
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/Awater', segment_output_dir='/home/guest/b09705011/mnt/data_pair/Awater', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/Awater/', nprocs=8)
+Processing chunk 0-4 with 8 processes...
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/Awater/_HyE_2DAe10.m4a based on /home/guest/b09705011/mnt/pseudo_label/Awater/_HyE_2DAe10.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/Awater/_UhH02mDsaE.m4a based on /home/guest/b09705011/mnt/pseudo_label/Awater/_UhH02mDsaE.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/Awater/_cSJtwJq3D0.m4a based on /home/guest/b09705011/mnt/pseudo_label/Awater/_cSJtwJq3D0.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/Awater/_YGJhT3Luo8.m4a based on /home/guest/b09705011/mnt/pseudo_label/Awater/_YGJhT3Luo8.csv
+Done
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/TKstorytw', segment_output_dir='/home/guest/b09705011/mnt/data_pair/TKstorytw', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/', nprocs=8)
+Processing chunk 0-5 with 8 processes...
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/Be8bz-JJpoQ.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/Be8bz-JJpoQ.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/7rtnIbor2RA.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/7rtnIbor2RA.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/0UXTCR0Rjco.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/0UXTCR0Rjco.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/AQBPFmcwGjo.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/AQBPFmcwGjo.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw/bEJkm8Z1reM.m4a based on /home/guest/b09705011/mnt/pseudo_label/TKstorytw/bEJkm8Z1reM.csv
+Done
+Namespace(trans_dir='/home/guest/b09705011/mnt/pseudo_label/withmoney', segment_output_dir='/home/guest/b09705011/mnt/data_pair/withmoney', audio_dir='/home/guest/b09705011/mnt/dataset_sr_16k/withmoney/', nprocs=8)
+Processing chunk 0-4 with 8 processes...
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/zjWMXERyA44.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/zjWMXERyA44.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/0jIyMQ7vOrA.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/0jIyMQ7vOrA.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/1q8AOdVd5tI.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/1q8AOdVd5tI.csv
+Segmenting /home/guest/b09705011/mnt/dataset_sr_16k/withmoney/Zmn_5sZopPI.m4a based on /home/guest/b09705011/mnt/pseudo_label/withmoney/Zmn_5sZopPI.csv
+Done

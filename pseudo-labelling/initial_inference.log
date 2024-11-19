@@ -1,0 +1,76 @@
+Namespace(dataset_path='/home/guest/b09705011/mnt/dataset_sr_16k/Awater.tsv', batched_mode=False, output_dir='/home/guest/b09705011/mnt/pseudo_label/Awater', language='zh', log_progress='True', model_card='tiny', compute_type='default', chunk_length=5, batch_size=64, num_workers=2, repetition_penalty=10, word_timestamps=True)
+Using sequential inference
+Namespace(dataset_path='/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw.tsv', batched_mode=False, output_dir='/home/guest/b09705011/mnt/pseudo_label/TKstorytw', language='zh', log_progress='True', model_card='tiny', compute_type='default', chunk_length=5, batch_size=64, num_workers=2, repetition_penalty=10, word_timestamps=True)
+Using sequential inference
+Namespace(dataset_path='/home/guest/b09705011/mnt/dataset_sr_16k/withmoney.tsv', batched_mode=False, output_dir='/home/guest/b09705011/mnt/pseudo_label/withmoney', language='zh', log_progress='True', model_card='tiny', compute_type='default', chunk_length=5, batch_size=64, num_workers=2, repetition_penalty=10, word_timestamps=True)
+Using sequential inference
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_HyE_2DAe10.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_YGJhT3Luo8.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_cSJtwJq3D0.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_UhH02mDsaE.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/Be8bz-JJpoQ.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/AQBPFmcwGjo.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/7rtnIbor2RA.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/0UXTCR0Rjco.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/bEJkm8Z1reM.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/zjWMXERyA44.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/Zmn_5sZopPI.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/1q8AOdVd5tI.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/0jIyMQ7vOrA.csv
+Namespace(dataset_path='/home/guest/b09705011/mnt/dataset_sr_16k/withmoney.tsv', batched_mode=False, output_dir='/home/guest/b09705011/mnt/pseudo_label/withmoney', language='zh', log_progress='True', model_card='tiny', compute_type='default', chunk_length=5, batch_size=64, num_workers=2, repetition_penalty=10, word_timestamps=True)
+Using sequential inference
+Namespace(dataset_path='/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw.tsv', batched_mode=False, output_dir='/home/guest/b09705011/mnt/pseudo_label/TKstorytw', language='zh', log_progress='True', model_card='tiny', compute_type='default', chunk_length=5, batch_size=64, num_workers=2, repetition_penalty=10, word_timestamps=True)
+Using sequential inference
+Namespace(dataset_path='/home/guest/b09705011/mnt/dataset_sr_16k/Awater.tsv', batched_mode=False, output_dir='/home/guest/b09705011/mnt/pseudo_label/Awater', language='zh', log_progress='True', model_card='tiny', compute_type='default', chunk_length=5, batch_size=64, num_workers=2, repetition_penalty=10, word_timestamps=True)
+Using sequential inference
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_cSJtwJq3D0.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_UhH02mDsaE.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_HyE_2DAe10.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_YGJhT3Luo8.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/Be8bz-JJpoQ.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/AQBPFmcwGjo.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/7rtnIbor2RA.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/0UXTCR0Rjco.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/bEJkm8Z1reM.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/zjWMXERyA44.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/Zmn_5sZopPI.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/1q8AOdVd5tI.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/0jIyMQ7vOrA.csv
+Namespace(dataset_path='/home/guest/b09705011/mnt/dataset_sr_16k/Awater.tsv', batched_mode=False, output_dir='/home/guest/b09705011/mnt/pseudo_label/Awater', language='zh', log_progress='True', model_card='tiny', compute_type='default', chunk_length=5, batch_size=64, num_workers=2, repetition_penalty=10, word_timestamps=True)
+Using sequential inference
+Namespace(dataset_path='/home/guest/b09705011/mnt/dataset_sr_16k/withmoney.tsv', batched_mode=False, output_dir='/home/guest/b09705011/mnt/pseudo_label/withmoney', language='zh', log_progress='True', model_card='tiny', compute_type='default', chunk_length=5, batch_size=64, num_workers=2, repetition_penalty=10, word_timestamps=True)
+Using sequential inference
+Namespace(dataset_path='/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw.tsv', batched_mode=False, output_dir='/home/guest/b09705011/mnt/pseudo_label/TKstorytw', language='zh', log_progress='True', model_card='tiny', compute_type='default', chunk_length=5, batch_size=64, num_workers=2, repetition_penalty=10, word_timestamps=True)
+Using sequential inference
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_HyE_2DAe10.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_YGJhT3Luo8.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_cSJtwJq3D0.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_UhH02mDsaE.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/Be8bz-JJpoQ.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/AQBPFmcwGjo.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/7rtnIbor2RA.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/0UXTCR0Rjco.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/bEJkm8Z1reM.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/zjWMXERyA44.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/Zmn_5sZopPI.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/1q8AOdVd5tI.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/0jIyMQ7vOrA.csv
+Namespace(dataset_path='/home/guest/b09705011/mnt/dataset_sr_16k/Awater.tsv', batched_mode=False, output_dir='/home/guest/b09705011/mnt/pseudo_label/Awater', language='zh', log_progress='True', model_card='tiny', compute_type='default', chunk_length=5, batch_size=64, num_workers=2, repetition_penalty=10, word_timestamps=True)
+Using sequential inference
+Namespace(dataset_path='/home/guest/b09705011/mnt/dataset_sr_16k/TKstorytw.tsv', batched_mode=False, output_dir='/home/guest/b09705011/mnt/pseudo_label/TKstorytw', language='zh', log_progress='True', model_card='tiny', compute_type='default', chunk_length=5, batch_size=64, num_workers=2, repetition_penalty=10, word_timestamps=True)
+Using sequential inference
+Namespace(dataset_path='/home/guest/b09705011/mnt/dataset_sr_16k/withmoney.tsv', batched_mode=False, output_dir='/home/guest/b09705011/mnt/pseudo_label/withmoney', language='zh', log_progress='True', model_card='tiny', compute_type='default', chunk_length=5, batch_size=64, num_workers=2, repetition_penalty=10, word_timestamps=True)
+Using sequential inference
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_cSJtwJq3D0.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_UhH02mDsaE.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_HyE_2DAe10.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/Awater/_YGJhT3Luo8.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/Be8bz-JJpoQ.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/AQBPFmcwGjo.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/7rtnIbor2RA.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/0UXTCR0Rjco.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/TKstorytw/bEJkm8Z1reM.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/zjWMXERyA44.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/Zmn_5sZopPI.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/1q8AOdVd5tI.csv
+Transcription completed: /home/guest/b09705011/mnt/pseudo_label/withmoney/0jIyMQ7vOrA.csv

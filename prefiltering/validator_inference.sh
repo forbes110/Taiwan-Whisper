@@ -19,3 +19,10 @@ python3 validator_inference.py \
 # args = parser.parse_args()
 
 # main(args)
+
+
+python3 validator_inference.py \
+    --manifest /mnt/home/ntuspeechlabtaipei1/forbes/metadata/Awater.tsv \
+    --output_dir /mnt/home/ntuspeechlabtaipei1/forbes/validator_inference/Awater \
+    --validator openai/whisper-medium \
+    --batch_size 32

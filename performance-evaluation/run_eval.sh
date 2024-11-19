@@ -26,7 +26,7 @@ text_column_name="sentence"
 audio_column_name="audio"
 
 python run_eval.py \
-    --model_name_or_path /home/guest/b09705011/mnt/student_model \
+    --model_name_or_path /mnt/home/ntuspeechlabtaipei1/forbes/student_model \
     --dataset_name $dataset_name \
     --dataset_config_name $dataset_config_name \
     --dataset_split_name $dataset_split_name \
@@ -38,5 +38,38 @@ python run_eval.py \
     --language "zh" \
     --attn_implementation "sdpa" \
     --mix_lang_emb True \
-    --save_dir /home/guest/b09705011/mnt/prediction
+    --save_dir /mnt/home/ntuspeechlabtaipei1/forbes/prediction
+
+# python run_eval.py \
+#     --model_name_or_path /home/guest/b09705011/mnt/student_model \
+#     --dataset_name $dataset_name \
+#     --dataset_config_name $dataset_config_name \
+#     --dataset_split_name $dataset_split_name \
+#     --text_column_name $text_column_name \
+#     --audio_column_name $audio_column_name \
+#     --batch_size 32 \
+#     --dtype "bfloat16" \
+#     --generation_max_length 256 \
+#     --language "zh" \
+#     --attn_implementation "sdpa" \
+#     --mix_lang_emb True \
+#     --save_dir /home/guest/b09705011/mnt/prediction
+
+
+# python run_eval.py \
+#     --model_name_or_path /home/guest/b09705011/mnt/student_model \
+#     --dataset_name $dataset_name \
+#     --dataset_config_name $dataset_config_name \
+#     --dataset_split_name $dataset_split_name \
+#     --text_column_name $text_column_name \
+#     --audio_column_name $audio_column_name \
+#     --batch_size 32 \
+#     --dtype "bfloat16" \
+#     --generation_max_length 256 \
+#     --language "zh" \
+#     --attn_implementation "sdpa" \
+#     --mix_lang_emb True \
+#     --save_dir /home/guest/b09705011/mnt/prediction
+
+
 
