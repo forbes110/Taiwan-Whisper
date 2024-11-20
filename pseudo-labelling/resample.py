@@ -191,7 +191,7 @@ async def main():
     parser.add_argument("--invalid_channels", type=str, help="Path to invalid channels CSV file")
     parser.add_argument("--to_flac", action='store_true', help="Convert output to FLAC format")
     parser.add_argument("--max_workers", type=int, default=4, help="Maximum number of concurrent workers")
-    parser.add_argument("--output_dir", type=str, help="Directory to save processed files")
+    parser.add_argument("--output_dir", required=True, type=str, help="Directory to save processed files")
     args = parser.parse_args()
 
     start_time = time.time()

@@ -54,20 +54,20 @@
 
 
 python3 initial_inference.py \
-    --dataset_path /home/guest/b09705011/mnt/dataset_meta/Awater.tsv \
-    --output_dir /home/guest/b09705011/mnt/pseudo_label/Awater \
+    --dataset_path /mnt/home/ntuspeechlabtaipei1/forbes/dataset_sr_16k/Awater.tsv \
+    --output_dir /mnt/home/ntuspeechlabtaipei1/forbes/pseudo_label/Awater \
     --language zh \
     --log_progress True \
-    --model_card large-v2 \
+    --model_card tiny \
     --compute_type default \
     --chunk_length 5 \
-    --num_workers 2 
+    --num_workers 8 | tee -a initial_inference_try.log 
 
 
 
 # python3 initial_inference.py \
 #     --dataset_path /home/guest/b09705011/mnt/dataset_1T/makingsashimi.tsv \
-#     --output_dir /home/guest/b09705011/mnt/pseudo_label/makingsashimi \
+#     --output_dir /mnt/home/ntuspeechlabtaipei1/forbes/pseudo_label/makingsashimi \
 #     --language zh \
 #     --log_progress True \
 #     --model_card large-v2 \
