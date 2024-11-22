@@ -38,10 +38,10 @@ def read_pseudo_labels(csv_fpath):
         reader = csv.reader(f)
         next(reader)  # Skip header
         for row in reader:
-            if len(row) != 3:
+            if len(row) != 4:
                 continue
-            start, end, text = row
-            segments.append((float(start), float(end), text.strip()))
+            speaker, start, end, text = row
+            segments.append((float(start.rstrip('s')), float(end.rstrip('s')), text.strip()))
     return segments
 
 def segment_audio_by_trans(audio_trans_pair, segment_output_dir):

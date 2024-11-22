@@ -1,7 +1,7 @@
 #!/bin/bash
 metadata_dir="/mnt/home/ntuspeechlabtaipei1/forbes/metadata"
 common_hallucination_dir="/mnt/home/ntuspeechlabtaipei1/forbes/common_hallucination_caught"
-validator_card="openai/whisper-medium"
+validator_card="openai/whisper-base"
 validator_inference_dir="/mnt/home/ntuspeechlabtaipei1/forbes/validator_inference"
 cleaned_dir="/mnt/home/ntuspeechlabtaipei1/forbes/cleaned"
 # for CPU
@@ -26,7 +26,7 @@ for original_tsv in "$metadata_dir"/*.tsv; do
             --original_tsv "$original_tsv" \
             --output_dir "$output_dir" \
             --execute_removal
-        echo "Complete [rocessing $(basename "$filename") at $(timestamp)" | tee -a common_hallucination_removal.log  
+        echo "Complete processing $(basename "$filename") at $(timestamp)" | tee -a common_hallucination_removal.log  
     fi
 done
 

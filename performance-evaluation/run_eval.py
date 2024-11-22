@@ -113,7 +113,7 @@ class DataTrainingArguments:
     return_timestamps: bool = field(
         default=True,
         metadata={
-            "help": "Whether to decode with timestamps. This can help for improved WER for long form evaluation."
+            "help": "Whether to decode with timestamps. This can help for improved mer for long form evaluation."
         },
     )
     language: str = field(
@@ -227,7 +227,7 @@ class DataTrainingArguments:
         },
     )
     wandb_project: str = field(
-        default="distil-whisper-speed-benchmark",
+        default="Taiwan-Whisper-Performance-Evaluation",
         metadata={"help": "The name of the wandb project."},
     )
     wandb_name: str = field(
@@ -306,14 +306,14 @@ def write_wandb_pred(
     label_str,
     norm_pred_str,
     norm_label_str,
-    wer_per_sample,
+    mer_per_sample,
     prefix="eval",
     save_dir=None
 ):
-    columns = ["WER", "Label", "Pred", "Norm Label", "Norm Pred"]
+    columns = ["MER", "Label", "Pred", "Norm Label", "Norm Pred"]
     # convert str data to a wandb compatible format
     str_data = [
-        [wer_per_sample[i], label_str[i], pred_str[i], norm_label_str[i], norm_pred_str[i]]
+        [mer_per_sample[i], label_str[i], pred_str[i], norm_label_str[i], norm_pred_str[i]]
         for i in range(len(pred_str))
     ]
 
@@ -657,7 +657,7 @@ def main():
     metric = MixErrorRate()
 
     def compute_metrics(pred_str, label_str):
-        # normalize everything and re-compute the WER
+        # normalize everything and re-compute the mer
         norm_pred_str = [normalizer(pred) for pred in pred_str]
         norm_label_str = [normalizer(label) for label in label_str]
 
@@ -665,8 +665,8 @@ def main():
         norm_pred_str = [norm_pred_str[i] for i in range(len(norm_pred_str)) if len(norm_label_str[i]) > 0]
         norm_label_str = [norm_label_str[i] for i in range(len(norm_label_str)) if len(norm_label_str[i]) > 0]
 
-        wer = 100 * metric.compute(predictions=norm_pred_str, references=norm_label_str)
-        return wer
+        mer = 100 * metric.compute(predictions=norm_pred_str, references=norm_label_str)
+        return mer
 
     gen_kwargs = {
         "max_length": data_args.generation_max_length,
@@ -751,7 +751,7 @@ def main():
 
     stats_dataset = DatasetDict()
 
-    all_stats = {"rtf": 0, "wer": 0}
+    all_stats = {"rtf": 0, "mer": 0}
     rtf_stats = {
         "times_audio_total": 0,
         "times_transcription_total": 0,
@@ -795,17 +795,17 @@ def main():
         ]
         norm_references = [norm_references[i] for i in range(len(norm_references)) if len(norm_references[i]) > 0]
 
-        stats["wer"] = compute_metrics(norm_transcriptions, norm_references)
+        stats["mer"] = compute_metrics(norm_transcriptions, norm_references)
 
-        wer_per_sample = []
+        mer_per_sample = []
         for pred, ref in zip(norm_transcriptions, norm_references):
-            wer_per_sample.append(compute_metrics([pred], [ref]))
+            mer_per_sample.append(compute_metrics([pred], [ref]))
 
         stats["rtf"] = times_audio_total / times_transcription_total
         stats_dataset[split] = stats
 
-        wer_desc = " ".join([f"Eval {key}: {value} |" for key, value in stats.items()])
-        datasets_evaluated_progress_bar.write(wer_desc)
+        mer_desc = " ".join([f"Eval {key}: {value} |" for key, value in stats.items()])
+        datasets_evaluated_progress_bar.write(mer_desc)
 
         write_wandb_metric(wandb_logger, stats, prefix=split, save_dir=data_args.save_dir)
 
@@ -816,16 +816,16 @@ def main():
                 references,
                 norm_transcriptions,
                 norm_references,
-                wer_per_sample,
+                mer_per_sample,
                 prefix=split,
                 save_dir=data_args.save_dir,
             )
 
         rtf_stats["times_audio_total"] += times_audio_total
         rtf_stats["times_transcription_total"] += times_transcription_total
-        all_stats["wer"] += stats["wer"]
+        all_stats["mer"] += stats["mer"]
 
-    all_stats["wer"] = all_stats["wer"] / len(result_datasets)
+    all_stats["mer"] = all_stats["mer"] / len(result_datasets)
     # technically this is the reciprocal of the RTF, but it makes the scale easier to read on wandb
     all_stats["rtf"] = rtf_stats["times_audio_total"] / rtf_stats["times_transcription_total"]
 
