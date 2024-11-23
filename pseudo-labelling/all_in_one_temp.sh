@@ -93,18 +93,17 @@ timestamp() {
 #         --nprocs 150 | tee -a prepare_dataset.log
 # done
 
-# 7. bash minnan_detection.sh
-# for audio_dir in "$meta_dir"/*/; do
-#     echo "Start scanning $data_pair_dir/$(basename "$audio_dir") at $(timestamp)" | tee -a minnan_detection.log
-#     python3 minnan_detection.py \
-#         --directory "$data_pair_dir/$(basename "$audio_dir")" \
-#         --csv_output_dir "$minnan_dir/$(basename "$audio_dir")" \
-#         --num_workers 24 \
-#         --to_remove | tee -a minnan_detection.log
-# done
+# 7. bash gen_metadata.sh
+for audio_dir in "$meta_dir"/*/; do
+    python3 gen_metadata.py "$data_pair_dir/$(basename "$audio_dir")" \
+        --valid-percent 0 \
+        --dest "$metadata_dir" \
+        --output_fname "$(basename "$audio_dir")" | tee -a gen_metadata.log
+done
 
 
-
+# 8. bash minnan_detection.sh
+# TODO: delete the corresponding path in metadata
 channel_names_csv="/mnt/home/ntuspeechlabtaipei1/forbes/Taiwan-Whisper/pseudo-labelling/done_channel_names.csv"
 channel_names_column="channel_name"
 
@@ -138,8 +137,8 @@ for audio_dir in "$meta_dir"/*/; do
     python3 minnan_detection.py \
         --directory "$data_pair_dir/$base_name" \
         --csv_output_dir "$minnan_dir/$base_name" \
-        --num_workers 8 \
-        --to_remove | tee -a minnan_detection.log
+        --num_workers 8 | tee -a minnan_detection.log \
+        --metadata_dir "$metadata_dir"
     
     # Check if processing was successful
     if [ $? -eq 0 ]; then
@@ -150,17 +149,6 @@ for audio_dir in "$meta_dir"/*/; do
         echo "Processing failed for $audio_dir. Skipping addition to the CSV."
     fi
 done
-
-# 8. bash gen_metadata.sh
-for audio_dir in "$meta_dir"/*/; do
-    python3 gen_metadata.py "$data_pair_dir/$(basename "$audio_dir")" \
-        --valid-percent 0 \
-        --dest "$metadata_dir" \
-        --output_fname "$(basename "$audio_dir")" | tee -a gen_metadata.log
-done
-
-
-
 
 
 

@@ -93,14 +93,13 @@ def detect_minnan(audio_path):
         logging.error(f"Error processing '{audio_path}': {e}")
         return False, None
 
-def process_file(audio_path, to_remove):
+def process_file(audio_path, metadata_path):
     """
     Process a single audio file: detect language and optionally delete files.
 
     Args:
         audio_path (str): Path to the audio file.
-        to_remove (bool): Whether to delete the detected files.
-
+        metadata
     Returns:
         dict: Information about the processed file.
     """
@@ -110,13 +109,41 @@ def process_file(audio_path, to_remove):
         'detected_lang': lang,
         'is_minnan': is_minnan
     }
-    if is_minnan and to_remove:
-        # Delete the audio file and its corresponding text file
+    if is_minnan:
+        # Delete the audio file path from metadata
+        """
+        Metadata takes the form:
+            /mnt/home/ntuspeechlabtaipei1/forbes/data_pair/Awater
+            xyxkQ_6D6c0/xyxkQ_6D6c0_3825920-4305600.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_478720-957760.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_4305600-4783040.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_1910080-2388480.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_2867520-3345920.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_2388480-2867520.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_1435520-1910080.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_957760-1435520.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_4783040-5248320.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_0-478720.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_6199040-6679040.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_6212480-6687680.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_5733440-6212480.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_957760-1435200.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_4783040-5261440.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_5727680-6199040.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_5261440-5733440.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_5248320-5727680.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_1435200-1910080.flac
+            xyxkQ_6D6c0/xyxkQ_6D6c0_3345920-3825920.flac
+            k5arQi43p1M/k5arQi43p1M_14294720-14772480.flac
+            k5arQi43p1M/k5arQi43p1M_29029280-29507680.flac
+            k5arQi43p1M/k5arQi43p1M_3344640-3822720.flac
+        audio_path:
+            /mnt/home/ntuspeechlabtaipei1/forbes/data_pair/0a7f107e-8015-403d-bed3-a1f9d7511bbf/2de00dce-f755-4071-8a17-4f3b137ce015/2de00dce-f755-4071-8a17-4f3b137ce015_55851520-56315840.flac
+        """
         try:
-            os.remove(audio_path)
-            txt_path = os.path.splitext(audio_path)[0] + '.txt'
-            if os.path.isfile(txt_path):
-                os.remove(txt_path)
+            # 
+            remove_path = os.path.sep.join(audio_path.split(os.path.sep)[-2:])
+            # TODO: remove this row in metadata(with metadata_path, a csv), do not delete original file
             result['removed'] = True
         except Exception as e:
             logging.error(f"Error deleting '{audio_path}' and its corresponding files: {e}")
@@ -131,9 +158,9 @@ def main():
 
     parser = argparse.ArgumentParser(description="Detect and optionally delete Taiwanese Hokkien (Min Nan) audio files.")
     parser.add_argument("--directory", type=str, help="Path to the directory containing audio files.", required=True)
-    parser.add_argument("--to_remove", action="store_true", help="If set, delete detected audio files and their corresponding text files.")
     parser.add_argument("--csv_output_dir", type=str, default="minnan_detected", help="Path to the output CSV file.")
     parser.add_argument("--num_workers", type=int, default=8, help="Number of parallel worker processes.")  # Default set to 8
+    parser.add_argument("--metadata_dir", type=str, default=8, help="Metadata Directory")  # Default set to 8
     args = parser.parse_args()
 
     # Collect all FLAC files in the specified directory
@@ -145,6 +172,9 @@ def main():
 
     total_files = len(flac_files)
     print(f"Found {total_files} FLAC files in the directory '{args.directory}'.")
+    
+    channel_name = os.path.basename(args.directory)
+    metadata_path=f"{args.metadata_dir}/{channel_name}.csv"
 
     detected_files = []
 
@@ -166,7 +196,7 @@ def main():
     # Use ProcessPoolExecutor with initializer
     with ProcessPoolExecutor(max_workers=args.num_workers, initializer=init_worker, initargs=(gpu_queue,)) as executor:
         # Submit all tasks
-        future_to_file = {executor.submit(process_file, flac, args.to_remove): flac for flac in flac_files}
+        future_to_file = {executor.submit(process_file, flac, metadata_path): flac for flac in flac_files}
         
         # Initialize tqdm progress bar
         with tqdm(total=total_files, desc="Processing files", unit="file") as pbar:
