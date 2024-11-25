@@ -45,7 +45,9 @@ def check_hallucination(segment, **kwargs):
 
 def check_single_trans(input, skip_special_tokens=True, metric=None, threshold=0.5, normalizer=None, mix_detection=False, empty_error_rate=1.0):
     idx, trans_fpath, hyp = input
-    
+
+    # TODO: FlieNotFoundError
+                    
     with open(trans_fpath, "r") as f:
         lines = f.readlines()
         
@@ -74,8 +76,11 @@ def check_single_trans(input, skip_special_tokens=True, metric=None, threshold=0
         hyp = normalizer(hyp.strip().replace(' ', ''))
         whisper_transcript = normalizer(whisper_transcript)
         
+    # if idx==6965 or idx==7723:
+    #     print(f"idx:{idx}, hyp:{hyp}, whisper_transcript:{whisper_transcript}")
+        
     # check hallucination by comparing the original transcript and the valiadtor inferenced hyp transcript with MER
-    mer = metric.compute([whisper_transcript], [hyp], show_progress=False, empty_error_rate=empty_error_rate)
+    mer = metric.compute([whisper_transcript], [hyp], show_progress=False, empty_error_rate=empty_error_rate, idx=idx)
     
     if mix_detection:
                 
@@ -104,8 +109,8 @@ def check_single_trans(input, skip_special_tokens=True, metric=None, threshold=0
     return idx, False, None
 
 def whisper_checker(
-    original_tsv, 
-    hyps_tsv, 
+    original_tsv, # tsv that contains flac file paths for distinct channel
+    hyps_tsv, # txt that contains txt transriptions for distinct channel
     output_dir, 
     threshold=0.6, 
     num_workers=32, 
@@ -142,11 +147,12 @@ def whisper_checker(
                 'hyp': hyp,
             }
     
-    print(f"Invalid line counts: {len(invalid_line_indices)}, total lines: {i}, indices: {invalid_line_indices}")
+    print(f"Invalid line counts: {len(invalid_line_indices)}, total lines: {i+1}, indices: {invalid_line_indices}")
     
     # check the length alignment between the original trans_fpaths and the hyps
     if not len(trans_fpaths) == len(idx_to_src_and_hyp):
         print(f"Length mismatch, trans_fpaths: {len(trans_fpaths)}, hyps: {len(idx_to_src_and_hyp)}")
+    print("Length matched:", len(idx_to_src_and_hyp))
         
     # matching idx to src
     for valid_idx in idx_to_src_and_hyp.keys():
@@ -260,7 +266,10 @@ def main(args):
     print(args)
 
     if args.type == "whisper":
-        whisper_checker(args.original_tsv, args.hyps_txt, args.output_dir, 
+        whisper_checker(
+            args.original_tsv, 
+            args.hyps_txt, 
+            args.output_dir, 
             threshold=args.threshold, 
             num_workers=args.num_workers, 
             phonemize=args.phonemize,
@@ -269,7 +278,7 @@ def main(args):
             additional_fname=args.additional_fname,
             overwrite_root=args.overwrite_root,
         )
-    print("Everthing is done!")
+    print(f"{args.original_tsv} is done!")
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ from functools import partial
 from pypinyin import pinyin, lazy_pinyin, Style
 from g2p_en import G2p # too slow, should use lexicon instead
 import edit_distance
+import numpy as np
 
 lexicon_fpath = './lexicon.lst'
 
@@ -155,7 +156,7 @@ class MixErrorRate(object):
                 prev_reset_idx = i
         return count
 
-    def compute(self, predictions=None, references=None, show_progress=True, empty_error_rate=1.0, **kwargs):
+    def compute(self, predictions=None, references=None, show_progress=True, empty_error_rate=1.0, idx=np.nan, **kwargs):
         # called: mer = metric.compute([whisper_transcript], [hyp], show_progress=False, empty_error_rate=empty_error_rate)
         total_err = 0
         total_ref_len = 0
@@ -214,7 +215,7 @@ class MixErrorRate(object):
                 }
                 print(f"Local MER@{i}: {local_mer}")
         if total_ref_len == 0:
-            print(f"No reference found, return {empty_error_rate*100}% error rate instead")
+            print(f"No reference found, return {empty_error_rate*100}% error rate instead, the corresponding prediction is {idx}, {predictions}")
             return empty_error_rate # if no reference, return 100% error rate instead
         mer = total_err / total_ref_len
         if self.separate_language or self.count_repetitive_hallucination:

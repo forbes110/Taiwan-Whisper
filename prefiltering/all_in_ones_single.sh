@@ -98,54 +98,54 @@ if [ ! -d "$metadata_dir" ]; then
     exit 1
 fi
 
-# 1. bash common_hallucination_removal.sh
-echo "Step 1 - Common Hallucination Removal: $(timestamp)" | tee -a common_hallucination_removal.log
-for original_tsv in "$metadata_dir"/*.tsv; do
-    if [[ -f "$original_tsv" ]]; then
-        filename=$(basename "$original_tsv" .tsv)
-        echo "Start processing $(basename "$filename") at $(timestamp)" | tee -a common_hallucination_removal.log
-        output_dir="$common_hallucination_dir/$filename"
-        python3 common_hallucination_removal.py \
-            --original_tsv "$original_tsv" \
-            --output_dir "$output_dir" \
-            --execute_removal 2>&1 | tee -a common_hallucination_removal.log  
-        echo "Complete processing $(basename "$filename") at $(timestamp)" | tee -a common_hallucination_removal.log  
-    fi
-done
+# # 1. bash common_hallucination_removal.sh
+# echo "Step 1 - Common Hallucination Removal: $(timestamp)" | tee -a common_hallucination_removal.log
+# for original_tsv in "$metadata_dir"/*.tsv; do
+#     if [[ -f "$original_tsv" ]]; then
+#         filename=$(basename "$original_tsv" .tsv)
+#         echo "Start processing $(basename "$filename") at $(timestamp)" | tee -a common_hallucination_removal.log
+#         output_dir="$common_hallucination_dir/$filename"
+#         python3 common_hallucination_removal.py \
+#             --original_tsv "$original_tsv" \
+#             --output_dir "$output_dir" \
+#             --execute_removal
+#         echo "Complete processing $(basename "$filename") at $(timestamp)" | tee -a common_hallucination_removal.log  
+#     fi
+# done
 
-# 2. bash validator_inference.sh
-# Start logging
-echo "Step 2 - Validator Inference start: $(timestamp)" | tee -a validator_inference.log
+# # 2. bash validator_inference.sh
+# # Start logging
+# echo "Step 2 - Validator Inference start: $(timestamp)" | tee -a validator_inference.log
 
-# Loop through each TSV file in the metadata directory
-for original_tsv in "$metadata_dir"/*.tsv; do
-    if [[ -f "$original_tsv" ]]; then
-        filename=$(basename "$original_tsv" .tsv)
-        output_dir="$validator_inference_dir/$filename"
+# # Loop through each TSV file in the metadata directory
+# for original_tsv in "$metadata_dir"/*.tsv; do
+#     if [[ -f "$original_tsv" ]]; then
+#         filename=$(basename "$original_tsv" .tsv)
+#         output_dir="$validator_inference_dir/$filename"
         
-        # Create output directory if it doesn't exist
-        mkdir -p "$output_dir"
+#         # Create output directory if it doesn't exist
+#         mkdir -p "$output_dir"
         
-        # Log the start of inference for the current file
-        echo "Start inferencing $(basename "$filename") at $(timestamp)" | tee -a validator_inference.log
+#         # Log the start of inference for the current file
+#         echo "Start inferencing $(basename "$filename") at $(timestamp)" | tee -a validator_inference.log
         
-        # Run the inference command and log both stdout and stderr
-        # WORLD_SIZE=1 RANK=0 LOCAL_RANK=0 MASTER_ADDR=localhost MASTER_PORT=29500 python3 validator_inference.py \
-        accelerate launch validator_inference.py \
-            --manifest "$original_tsv" \
-            --output_dir "$output_dir" \
-            --validator "$validator_card" \
-            --batch_size $batch_size 2>&1 | tee -a validator_inference.log
+#         # Run the inference command and log both stdout and stderr
+#         # WORLD_SIZE=1 RANK=0 LOCAL_RANK=0 MASTER_ADDR=localhost MASTER_PORT=29500 python3 validator_inference.py \
+#         accelerate launch validator_inference.py \
+#             --manifest "$original_tsv" \
+#             --output_dir "$output_dir" \
+#             --validator "$validator_card" \
+#             --batch_size $batch_size 2>&1 | tee -a validator_inference.log
         
-        # Check if the previous command was successful
-        if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
-            echo "Error during inferencing $(basename "$filename") at $(timestamp)" | tee -a validator_inference.log
-        else
-            # Log the completion of inference for the current file
-            echo "Complete inferencing $(basename "$filename") at $(timestamp)" | tee -a validator_inference.log
-        fi
-    fi
-done
+#         # Check if the previous command was successful
+#         if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+#             echo "Error during inferencing $(basename "$filename") at $(timestamp)" | tee -a validator_inference.log
+#         else
+#             # Log the completion of inference for the current file
+#             echo "Complete inferencing $(basename "$filename") at $(timestamp)" | tee -a validator_inference.log
+#         fi
+#     fi
+# done
 
 # 3. bash elim_hallucination.sh 
 echo "Step 3 - Hallucination elimination start: $(timestamp)" | tee -a "elim_hallucination_${i}.log"
@@ -160,9 +160,9 @@ for original_tsv in "$metadata_dir"/*.tsv; do
             --hyps_txt "$hyps_dir"/validator_inference.txt \
             --output_dir "$cleaned_dir/$filename" \
             --threshold $threshold \
-            --num_workers $num_workers \
-            --mix_detection \
-            --phonemize 2>&1 | tee -a "elim_hallucination_${i}.log"
+            --num_workers $num_workers #\
+            # --mix_detection
+            # --phonemize 
         echo "Complete processing $(basename "$filename") at $(timestamp)" | tee -a "elim_hallucination_${i}.log"
     fi
     echo "Everything is done at $(timestamp)" | tee -a "elim_hallucination_${i}.log"

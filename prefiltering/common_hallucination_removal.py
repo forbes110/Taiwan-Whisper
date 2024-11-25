@@ -45,7 +45,7 @@ def main():
 
     hallucination_contain_list = [
         "請不吝",
-        r"(?<!\w)org(?!\w)",  # Ensure examples like "organization" are not removed
+        # r"(?<!\w)org(?!\w)",  # Ensure examples like "organization" are not removed
         "點贊",
         "點讚",
         "字幕提供",

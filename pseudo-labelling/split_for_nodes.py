@@ -113,7 +113,7 @@ if __name__ == "__main__":
 
 
 
-# python3 split_for_nodes.py /mnt/home/ntuspeechlabtaipei1/forbes/Taiwan-Whisper/pseudo-labelling/all_channels.csv --done_csv /mnt/home/ntuspeechlabtaipei1/forbes/Taiwan-Whisper/pseudo-labelling/done_channel_names.csv
+# python3 split_for_nodes.py /mnt/home/ntuspeechlabtaipei1/forbes/Taiwan-Whisper/pseudo-labelling/all_channels.csv --done_csv /mnt/home/ntuspeechlabtaipei1/forbes/Taiwan-Whisper/pseudo-labelling/done_channel_names.csv -n 4
 
 
 
