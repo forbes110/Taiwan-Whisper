@@ -1,31 +1,20 @@
-# python3 filter_data.py \
-#     --input /mnt/dataset_1T/BabyBusTC \
-#     --max_workers 8
+#!/bin/bash
 
-# python3 resample.py \
-#     --input /mnt/dataset_1T/FTV_selected \
-#     --max_workers 8
+# meta_dir="/mnt/home/ntuspeechlabtaipei1/forbes/dataset_sr_16k"  
+init_dir="/mnt/home/ntuspeechlabtaipei1/tw_separated"  
+meta_dir="/mnt/home/ntuspeechlabtaipei1/forbes/tw_16k"  
 
+# Format: YYYY-MM-DD HH:MM:SS
+timestamp() {
+    date "+%Y-%m-%d %H:%M:%S"
+}
+
+# 1. bash resample.sh
+echo "Step 1 - Resample start at $(timestamp)" | tee -a resample.log
 python3 resample.py \
-    --input /home/guest/b09705011/mnt/dataset_meta \
-    --max_workers 4 \
-    --invalid_channels ./invalid_channel.tsv
-
-
-# python3 resample.py \
-#     --input /home/guest/b09705011/mnt/makingsashimi \
-#     --max_workers 8
-
-
-# python3 resample.py \
-#     --input /mnt/home/ntuspeechlabtaipei1/forbes/dataset_meta \
-#     --max_workers 4 \
-#     --invalid_channels ./invalid_channel.tsv
-
-# TODO: 看會不會卡 + 有沒有轉到 + 要有 output dir + all_in_one needs minnan_detection
-
-python3 resample.py \
-    --input /home/guest/b09705011/mnt/dataset_meta \
-    --output_dir /home/guest/b09705011/mnt/_dataset_meta \
-    --max_workers 8 \
-    --invalid_channels ./invalid_channel.tsv
+    --input "$init_dir" \
+    --max_workers 150 \
+    --invalid_channels ./invalid_channel.tsv \
+    --output_dir "$meta_dir" 2>&1 | tee resample.log
+echo "Step 1 - Resample end at $(timestamp)"
+echo "--------------------------------------------------------------------------------------------------------------------------------------------------------" | tee -a resample.log

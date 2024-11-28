@@ -2,11 +2,11 @@
 
 from datasets import load_dataset
 
-# dataset = load_dataset("mozilla-foundation/common_voice_16_1", "zh-TW", split="validation")
-# dataset.save_to_disk('/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/CV16')
+dataset = load_dataset("mozilla-foundation/common_voice_16_1", "zh-TW", split="validation")
+dataset.save_to_disk('/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/CV16')
 
-# dataset = load_dataset("CAiRE/ASCEND", split="validation")
-# dataset.save_to_disk('/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/ASCEND')
+dataset = load_dataset("CAiRE/ASCEND", split="validation")
+dataset.save_to_disk('/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/ASCEND')
 
 dataset = load_dataset("ky552/ML2021_ASR_ST", split="dev")
 dataset.save_to_disk('/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/ML2021_ASR_ST')

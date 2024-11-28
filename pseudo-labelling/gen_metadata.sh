@@ -56,3 +56,11 @@ for channel_name in $channel_names; do
         echo "$(timestamp) - Warning: Directory $audio_dir does not exist" | tee -a gen_metadata.log
     fi
 done
+
+
+# python3 gen_metadata.py 57ETFN \
+#     --valid-percent 0 \
+#     --dest /mnt/home/ntuspeechlabtaipei1/forbes/metadata \
+#     --output_fname 57ETFN | tee -a gen_metadata.log
+
+find /mnt/home/ntuspeechlabtaipei1/forbes/metadata -type f -name "*.tsv" -empty -print

@@ -538,9 +538,12 @@ def log_metric(
 
 def mix_language_embeddings(model: WhisperForConditionalGeneration, tokenizer, languages=['zh', 'en'], target_language='zh', weights=None):
     target_id = tokenizer.convert_tokens_to_ids(f"<|{target_language}|>")
+    
+    existing_dtype = model.model.decoder.embed_tokens.weight.dtype
     new_embedding = torch.zeros(
         model.model.decoder.embed_tokens.weight[target_id].shape, 
-        dtype="bfloat16")
+        dtype=existing_dtype
+    )
     
     if weights is None:
         weights = [1/len(languages)] * len(languages)
@@ -907,6 +910,11 @@ def main():
     )
 
     # 3. Set-up basic logging
+    
+    if accelerator.is_main_process:
+        os.makedirs(training_args.output_dir, exist_ok=True)
+    accelerator.wait_for_everyone()
+    
     # Create one log on every process with the configuration for debugging
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
@@ -1896,3 +1904,10 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
+    
+    
+# python3 split_nodes_by_csv.py \
+#     --metadata_dir /mnt/home/ntuspeechlabtaipei1/forbes/metadata \
+#     --channel_name_csv /mnt/home/ntuspeechlabtaipei1/forbes/Taiwan-Whisper/pseudo-labelling/node_3.csv \
+#     --output_dir /mnt/home/ntuspeechlabtaipei1/forbes/tw_metadata_node_3

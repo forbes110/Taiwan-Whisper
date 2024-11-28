@@ -26,6 +26,7 @@ timestamp() {
 # num_workers=2
 # model_card=tiny
 
+
 # 1. bash resample.sh
 echo "Step 1 - Resample start: $(timestamp)"
 python3 resample.py \
@@ -126,7 +127,7 @@ for audio_dir in "$meta_dir"/*/; do
     base_name=$(basename "$audio_dir")
     
     # Check if the base name is in the list of channel names
-    if [[ " ${channel_names[*]} " == *" $base_name "* ]]; then
+    if [[ " ${channel_names[*]} " == *" $base_name "* ]]; then00c55377-4b9a-488c-bf35-898c2a3700fc
         echo "Skipping $audio_dir (found in channel_names)" | tee -a minnan_detection.log
         continue  # Skip processing this directory
     fi

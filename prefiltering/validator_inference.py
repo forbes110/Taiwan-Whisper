@@ -148,7 +148,6 @@ def main(args):
 
     accelerator.wait_for_everyone()
 
-    # 每個進程寫入自己的文件
     process_rank = accelerator.process_index
     output_file_path = f"{args.output_dir}/validator_inference_rank{process_rank}.txt"
     fw = open(output_file_path, "w")
