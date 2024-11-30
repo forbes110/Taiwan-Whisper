@@ -13,6 +13,7 @@ packages
 *.pyo
 *.swp
 *.csv
+*.txt
 *.egg-info
 __pycache__/
 **/__pycache__/
@@ -23,3 +24,4 @@ __pycache__/
 **/*.todo
 **/*.log
 **/*.csv
+**/*.txt
