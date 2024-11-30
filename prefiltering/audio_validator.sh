@@ -84,3 +84,5 @@ done
 #     --input_path "/mnt/home/ntuspeechlabtaipei1/forbes/metadata/tw_metadata_node_1/57ETFN.tsv" \
 #     --num_workers 180 \
 #     --output_path "/mnt/home/ntuspeechlabtaipei1/forbes/Taiwan-Whisper/prefiltering/failed_audios_temp.txt"
+# /mnt/home/ntuspeechlabtaipei1/forbes/data_pair/1001taiwanstories/0-leKb3P0rs/0-leKb3P0rs_4751520-5283200.txt
+# find /mnt/home/ntuspeechlabtaipei1/forbes/data_pair/1001taiwanstories/0-leKb3P0rs -type f -name "*.txt" -exec sed -i 's/吃/吃/g' {} +

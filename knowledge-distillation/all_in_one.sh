@@ -1,6 +1,7 @@
 #!/bin/bash
 # huggingface-cli login
-# export WANDB_API_KEY=your_actual_wandb_api_key
+# export WANDB_API_KEY=<>
+
 export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 export WORLD_SIZE=8
 export NUM_NODES=1   
@@ -18,7 +19,7 @@ prefetch_factor=64
 teacher_model_card="openai/whisper-large-v2"
 
 # train_dataset_manifest=/mnt/home/ntuspeechlabtaipei1/forbes/cleaned_sample/049c00d3-d675-461e-9a11-522694633cdb/cleaned-threshold-0.6-mix_detection.tsv
-train_dataset_manifest="/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/train_0.6_20241129_045700.tsv"
+train_dataset_manifest="/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/train_0.6_20241130_175240.tsv"
 eval_dataset_name="mozilla-foundation/common_voice_16_1"
 ckpt_dir="/mnt/home/ntuspeechlabtaipei1/forbes/ckpt"
 preds_dir="/mnt/home/ntuspeechlabtaipei1/forbes/eval_preds"
@@ -37,10 +38,11 @@ timestamp() {
 # 	--save_dir "$student_model_dir" \
 # 	--mix_lang_emb
 
-# TODO: Note that resume_from_checkpoint
+# TODO: Note that resume_from_checkpoint is not always needed
+# --resume_from_checkpoint $resume_ckpt \
+
 echo "Distillation start: $(timestamp)" | tee -a run_distillation.log
 accelerate launch --num_processes 8 --main_process_port 29500 run_distillation.py \
-    --resume_from_checkpoint $resume_ckpt \
     --model_name_or_path "$student_model_dir" \
     --teacher_model_name_or_path "$teacher_model_card" \
     --train_dataset_manifest "$train_dataset_manifest" \
@@ -70,7 +72,7 @@ accelerate launch --num_processes 8 --main_process_port 29500 run_distillation.p
     --preprocessing_num_workers 8 \
     --ddp_timeout 7200 \
     --dtype "bfloat16" \
-    --attn_implementation "sdpa" \
+    --attn_implementation "flash_attention_2" \
     --output_dir "$ckpt_dir" \
     --do_train \
     --do_eval \
