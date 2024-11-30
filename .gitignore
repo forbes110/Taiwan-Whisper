@@ -25,3 +25,7 @@ __pycache__/
 **/*.log
 **/*.csv
 **/*.txt
+prefiltering/total_duration.txt
+pseudo-labelling/*.log
+prefiltering/total_duration.txt
+pseudo-labelling/*.log
