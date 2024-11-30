@@ -363,8 +363,12 @@ class DataTrainingArguments:
             "This argument should be set for multilingual distillation only. For English speech recognition, it should be left as `None`."
         },
     )
+    preds_dir: str = field(
+        default="/mnt/home/ntuspeechlabtaipei1/forbes/eval_preds",
+        metadata={"help": "The dir where eval preds saved(locally)."},
+    )
     wandb_project: str = field(
-        default="distil-whisper",
+        default="taiwan-whisper",
         metadata={"help": "The name of the wandb project."},
     )
     wandb_name: str = field(
@@ -899,9 +903,49 @@ def main():
         log_with=training_args.report_to,
         project_dir=training_args.output_dir,
     )
-
+    
+    config = {
+        # Training hyperparameters
+        "learning_rate": training_args.learning_rate,
+        "per_device_train_batch_size": training_args.per_device_train_batch_size,
+        "per_device_eval_batch_size": training_args.per_device_eval_batch_size,
+        "gradient_accumulation_steps": training_args.gradient_accumulation_steps,
+        "max_steps": training_args.max_steps,
+        "warmup_steps": training_args.warmup_steps,
+        "lr_scheduler_type": training_args.lr_scheduler_type,
+        
+        # Model configuration
+        "student_model": model_args.model_name_or_path,
+        "teacher_model": model_args.teacher_model_name_or_path,
+        "freeze_encoder": training_args.freeze_encoder,
+        "freeze_decoder": training_args.freeze_decoder,
+        "freeze_embed_positions": training_args.freeze_embed_positions,
+        "dtype": training_args.dtype,
+        "attn_implementation": model_args.attn_implementation,
+        
+        # Distillation parameters
+        "temperature": training_args.temperature,
+        "kl_weight": training_args.kl_weight,
+        
+        # Dataset configuration
+        "train_dataset_manifest": data_args.train_dataset_manifest,
+        "eval_dataset_name": data_args.eval_dataset_name,
+        "eval_dataset_config_name": data_args.eval_dataset_config_name,
+        "timestamp_probability": data_args.timestamp_probability,
+        "condition_on_prev_probability": data_args.condition_on_prev_probability,
+        "language": data_args.language,
+        "task": data_args.task,
+        
+        # Other important settings
+        "dataloader_num_workers": training_args.dataloader_num_workers,
+        "preprocessing_num_workers": data_args.preprocessing_num_workers,
+        "prefetch_factor": training_args.dataloader_prefetch_factor,
+        "seed": training_args.seed,
+    }
+    
     accelerator.init_trackers(
         project_name=data_args.wandb_project,
+        config=config,
         init_kwargs={
             "wandb": {"name": data_args.wandb_name,
                       "dir": data_args.wandb_dir}
@@ -1075,6 +1119,8 @@ def main():
     
     if model_args.mix_lang_emb:
         teacher_model = mix_language_embeddings(teacher_model, tokenizer, languages=['zh', 'en'])
+        
+    logger.info("Starting to load student_model...")
     
     # TODO: do create_student_model first to get the model_name_or_path init
     student_model = WhisperForConditionalGeneration.from_pretrained(
@@ -1652,15 +1698,26 @@ def main():
         return output_ids
 
     logger.info("***** Running training *****")
+    print("***** Running training *****")
+    
     logger.info(f"  Num examples = {total_train_steps * train_batch_size * gradient_accumulation_steps}")
     if not data_args.streaming:
         logger.info(f"  Num epochs = {num_epochs}")
+    print(f"  Num examples = {total_train_steps * train_batch_size * gradient_accumulation_steps}")
+    
     logger.info("  Instantaneous batch size per device =" f" {training_args.per_device_train_batch_size}")
     logger.info("  Gradient accumulation steps =" f" {gradient_accumulation_steps}")
     logger.info(
         f"  Total train batch size (w. parallel & distributed) = {train_batch_size * gradient_accumulation_steps}"
     )
+    print(f"  Total train batch size (w. parallel & distributed) = {train_batch_size * gradient_accumulation_steps}")
+    
+    
     logger.info(f"  Total optimization steps = {total_train_steps}")
+    
+    
+    
+    
 
     # ======================== Training ================================
     train_time = 0
@@ -1838,6 +1895,7 @@ def main():
                                 norm_label_str,
                                 step=cur_step,
                                 prefix=eval_split,
+                                output_dir=data_args.preds_dir, 
                             )
                         if training_args.save_valid_best:
                             if eval_metrics["wer"] < best_wer:

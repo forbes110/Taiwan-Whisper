@@ -24,9 +24,9 @@ common_hallucination_dir="/mnt/home/ntuspeechlabtaipei1/forbes/common_hallucinat
 validator_card="openai/whisper-base"
 validator_inference_dir="/mnt/home/ntuspeechlabtaipei1/forbes/validator_inference"
 cleaned_dir="/mnt/home/ntuspeechlabtaipei1/forbes/cleaned"
-batch_size=256
+batch_size=64
 # For CPU
-num_workers=150
+num_workers=180
 threshold=0.6
 
 # Format: YYYY-MM-DD HH:MM:SS
@@ -126,21 +126,6 @@ done
 
 echo "Finished hallucination removal process: $(timestamp)" | tee -a common_hallucination_removal.log
 
-# 1. bash common_hallucination_removal.sh
-# echo "Step 1 - Common Hallucination Removal: $(timestamp)" | tee -a common_hallucination_removal.log
-# for original_tsv in "$metadata_dir"/*.tsv; do
-#     if [[ -f "$original_tsv" ]]; then
-#         channel_name=$(basename "$original_tsv" .tsv)
-#         echo "Start processing $(basename "$channel_name") at $(timestamp)" | tee -a common_hallucination_removal.log
-#         output_dir="$common_hallucination_dir/$channel_name"
-#         python3 common_hallucination_removal.py \
-#             --original_tsv "$original_tsv" \
-#             --output_dir "$output_dir" \
-#             --num_threads 150 \
-#             --execute_removal 2>&1 | tee -a common_hallucination_removal.log  
-#         echo "Complete processing $(basename "$channel_name") at $(timestamp)" | tee -a common_hallucination_removal.log  
-#     fi
-# done
 
 
 echo "Step 2 - Validator Inference start: $(timestamp)" | tee -a validator_inference.log

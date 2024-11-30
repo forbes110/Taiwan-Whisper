@@ -1,0 +1,1 @@
+/mnt/home/ntuspeechlabtaipei1/forbes/data_pair/vlsports/haRbGZ5qN9w/haRbGZ5qN9w_8815680-8815680.flac	LibsndfileError: Error opening '/mnt/home/ntuspeechlabtaipei1/forbes/data_pair/vlsports/haRbGZ5qN9w/haRbGZ5qN9w_8815680-8815680.flac': Format not recognised.
