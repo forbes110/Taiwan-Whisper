@@ -29,7 +29,6 @@ from dataclasses import dataclass, field
 from functools import partial
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-from data_augmentation import shortform_data_aug
 
 import datasets
 import evaluate
@@ -143,30 +142,6 @@ class ModelArguments:
     mix_lang_emb: bool = field(
         default=False,
         metadata={"help": "Whether to mix the language embeddings in the teacher model."},
-    )
-    short_form_augmentation: bool = field(
-        default=False,
-        metadata={
-            "help": "Enable short form augmentation during training"
-        }
-    )
-    grain_sec: float = field(
-        default=0.5,
-        metadata={
-            "help": "sec for chunk augmentation."
-        }
-    )
-    augment_chunk_ratio: float = field(
-        default=0.333,
-        metadata={
-            "help": "ratio of augmented chunks are leaved"
-        }
-    )
-    augment_audio_ratio: float = field(
-        default=0.1,
-        metadata={
-            "help": "ratio of audio will pass to augmentation"
-        }
     )
 
     def __post_init__(self):
@@ -322,13 +297,6 @@ class DataTrainingArguments:
             "help": "The name of the training data set split to use (via the datasets library). Defaults to 'train'"
         },
     )
-    eval_dataset_path: str = field(
-        default="/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ACM.tsv",
-        metadata={
-            "help": "The dataset path of eval dataset(.tsv) file"
-        },
-    )
-    
     eval_split_name: str = field(
         default="validation",
         metadata={
@@ -1047,6 +1015,7 @@ def main():
     train_dataset_len = None
     
     if training_args.do_train:
+        # TODO: check loading code here
         # load my dataset
         raw_datasets["train"], audio_fpaths = load_customized_dataset(data_args.train_dataset_manifest, root=data_args.train_dataset_root)
         train_dataset_len = len(audio_fpaths)
@@ -1068,34 +1037,15 @@ def main():
             # load a single eval set
             dataset_dict = dataset_names_dict[0]
             all_eval_splits.append("eval")
-            
-            # raw_datasets["eval"] = load_dataset(
-            #     dataset_dict["name"],
-            #     dataset_dict["config"],
-            #     split=dataset_dict["split"],
-            #     cache_dir=data_args.dataset_cache_dir,
-            #     token=model_args.token,
-            #     streaming=data_args.streaming,
-            #     trust_remote_code=True
-            # )
-            
-            features = datasets.Features({
-                "idx": datasets.Value("string"),
-                "text": datasets.Value("string"),
-                "audio": datasets.Audio(sampling_rate=16000)  
-            })
-            
             raw_datasets["eval"] = load_dataset(
-                "csv",
-                data_files=data_args.eval_dataset_path,
-                delimiter="\t",
-                column_names=["idx", "transcription", "audio_path"],
-                features=features,
+                dataset_dict["name"],
+                dataset_dict["config"],
+                split=dataset_dict["split"],
                 cache_dir=data_args.dataset_cache_dir,
+                token=model_args.token,
                 streaming=data_args.streaming,
                 trust_remote_code=True
-            )["train"]  # Since we're not splitting, we use the 'train' split that load_dataset creates by default
-                    
+            )
             if data_args.eval_text_column_name != "text":
                 raw_datasets["eval"] = raw_datasets["eval"].rename_column(data_args.eval_text_column_name, "text")
         else:
@@ -1377,19 +1327,7 @@ def main():
         input_str_batched = batch[train_text_column_name]
         condition_on_prev_batched = batch.get("condition_on_prev", len(input_str_batched) * [None])
         
-        
-        if model_args.short_form_augmentation:
-             
-            should_augment = batch["batch_id"][0] % int(1/model_args.augment_audio_ratio) == 0 
-            
-            if should_augment:
-                audio, input_str_batched, condition_on_prev_batched = shortform_data_aug(
-                    audio, 
-                    input_str_batched, 
-                    condition_on_prev_batched, 
-                    model_args.grain_sec, 
-                    model_args.augment_chunk_ratio
-                )
+        # audio, input_str_batched, condition_on_prev_batched = data_aug(audio, input_str_batched, condition_on_prev_batched)
         
         batch["input_length"] = [len(sample) for sample in audio]
         inputs = feature_extractor(audio, sampling_rate=sampling_rate)

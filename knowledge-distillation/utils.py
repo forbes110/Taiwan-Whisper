@@ -320,8 +320,9 @@ def load_audio_fpaths(manifest_fpath, root=None):
     return audio_fpaths
 
 def customized_data_generator(audio_fpaths, last_segment_handler_type="trim"):
-    for audio_fpath in audio_fpaths:
+    for idx, audio_fpath in enumerate(audio_fpaths):
         feature = _get_feature_by_audio_fpath(audio_fpath, last_segment_handler_type=last_segment_handler_type)
+        feature["batch_id"] = idx
         yield feature
 
 def load_customized_dataset(manifest_fpath, root=None) -> IterableDataset:
@@ -333,7 +334,12 @@ def load_customized_dataset(manifest_fpath, root=None) -> IterableDataset:
     ex_feature['whisper_transcript'] = "dummy"
     ex_feature['last_segment_transcript'] = "dummy"
     ex_feature['condition_on_prev'] = "dummy"
-    customized_dataset = IterableDataset.from_generator(customized_data_generator, features=ex_feature, gen_kwargs={"audio_fpaths": audio_fpaths})
+    ex_feature['batch_id'] = "dummy"  
+    customized_dataset = IterableDataset.from_generator(
+        customized_data_generator, 
+        features=ex_feature, 
+        gen_kwargs={"audio_fpaths": audio_fpaths}
+    )
 
     return customized_dataset, audio_fpaths
 

@@ -7,7 +7,7 @@ import chardet
 from concurrent.futures import ProcessPoolExecutor
 from tqdm import tqdm
 
-TEXT_FILE_EXTENSIONS = {'.csv'}
+TEXT_FILE_EXTENSIONS = {'.csv', '.tsv'}
 
 def detect_encoding(file_path):
    with open(file_path, 'rb') as f:
@@ -80,3 +80,5 @@ def main():
 
 if __name__ == "__main__":
    main()
+
+
