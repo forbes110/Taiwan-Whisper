@@ -285,7 +285,6 @@ def write_metric(summary_writer, eval_metrics, step, prefix="eval"):
     for metric_name, value in eval_metrics.items():
         summary_writer.scalar(f"{prefix}/{metric_name}", value, step)
 
-
 def write_wandb_metric(wandb_logger, metrics, prefix, save_dir=None):
     log_metrics = {}
     for k, v in metrics.items():
@@ -298,7 +297,6 @@ def write_wandb_metric(wandb_logger, metrics, prefix, save_dir=None):
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(metrics, f, ensure_ascii=False, indent=4)
-
 
 def write_wandb_pred(
     wandb_logger,
@@ -331,7 +329,6 @@ def write_wandb_pred(
             writer = csv.writer(csvfile)
             writer.writerow(columns)
             writer.writerows(str_data)
-
 
 def convert_dataset_str_to_list(
     dataset_names, dataset_config_names, splits=None, text_column_names=None, dataset_hours=None, default_split="train"
@@ -410,7 +407,6 @@ def mix_language_embeddings(model: WhisperForConditionalGeneration, tokenizer, l
         model.model.decoder.embed_tokens.weight[target_id] = new_embedding
     return model
 
-
 def main():
     # 1. Parse input arguments
     # See all possible arguments in src/transformers/training_args.py
@@ -480,6 +476,8 @@ def main():
         raise ValueError("Wandb logging requires wandb to be installed. Run `pip install wandb` to enable.")
 
     # 3. Load dataset
+    # TODO: here to load localized test set
+    
     raw_datasets = IterableDatasetDict()
 
     # Convert lists of dataset names/configs/splits to a dict
@@ -519,6 +517,7 @@ def main():
         # ("distil-whisper/librispeech_asr", "validation.clean") -> "librispeech_asr/validation-clean"
         pretty_name = f"{dataset_dict['name'].split('/')[-1]}/{dataset_dict['split'].replace('.', '-')}"
         raw_datasets[pretty_name] = sub_dataset
+        
 
     # 5. Load pretrained model, tokenizer, and feature extractor
     processor = WhisperProcessor.from_pretrained(
@@ -584,9 +583,11 @@ def main():
         data_args.audio_column_name,
         datasets.features.Audio(sampling_rate=processor.feature_extractor.sampling_rate),
     )
+    print(f"=====================================Sample rate: {processor.feature_extractor.sampling_rate}=====================================")
 
     # 7. Preprocessing the datasets.
     # We need to read the audio files as arrays and tokenize the targets.
+    # TODO: check here for normalizer
     audio_column_name = data_args.audio_column_name
     normalizer = (
         BasicTextNormalizer() if data_args.language is not None

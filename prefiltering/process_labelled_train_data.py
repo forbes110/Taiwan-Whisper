@@ -71,10 +71,17 @@ def save_dataset_to_flac(
                 idx = f"{clean_prefix}_{raw_idx}"
             else:
                 idx = raw_idx
+                
+        audio_path = os.path.join(output_dir, f"{idx}.flac")
+        sf.write(audio_path, audio_array, sample_rate)
         
+        """
+        Concept: 
         
-        # TODO: process text by <|0.00|>transcription<|x.xx|><|endfortext|> and saved to the same dir as audio(maybe at final_dataset)
-        # TODO: add a new function to process things above
+        1. Saved to flac first.
+        
+        2. Process text by <|0.00|>transcription<|x.xx|><|endfortext|> and saved to the same dir as audio(maybe at final_dataset) add a new function to process things above.
+        """
         
         # Extract audio and transcription data
         transcription = instance[transcription_name]

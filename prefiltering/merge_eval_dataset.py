@@ -25,6 +25,7 @@ def save_dataset_to_flac(
     """
     Converts audio data from a Hugging Face dataset to FLAC files and creates a metadata TSV.
     The function now handles cases where idx_name is None by generating sequential IDs with prefix.
+    Also validates the uniqueness of idx_name column when provided.
     
     Args:
         dataset_path (str): Path to the saved Hugging Face dataset
@@ -38,34 +39,45 @@ def save_dataset_to_flac(
     
     Returns:
         None: Files are saved to disk
+    
+    Raises:
+        AssertionError: If idx_name is provided and contains duplicate values
     """
     # Load dataset and ensure output directory exists
     dataset = load_from_disk(dataset_path)
     os.makedirs(output_dir, exist_ok=True)
     
+    # Check uniqueness of idx_name if provided
+    if idx_name is not None:
+        # Convert dataset column to list for duplicate checking
+        idx_values = [instance[idx_name] for instance in dataset]
+        # Find duplicate values using set comparison
+        duplicates = [x for x in set(idx_values) if idx_values.count(x) > 1]
+        
+        if duplicates:
+            error_msg = f"Column '{idx_name}' contains duplicate values: {duplicates}"
+            print(f"錯誤：{error_msg}")
+            assert len(duplicates) == 0, error_msg
+        else:
+            print(f"column '{idx_name}' is specified as idx column.")        
+    
     # Initialize counter for generating sequential IDs
     current_id = 1
     
     # Calculate padding width based on dataset size for consistent ID formatting
-    # This ensures all IDs will have the same number of digits (e.g., 001, 002, ...)
     id_padding = len(str(len(dataset)))
     
     records = []
-    for instance in tqdm(dataset, desc=f"Processing {prefix.strip('_')} files"):
+    for instance in tqdm(dataset, desc=f"Processing {prefix} files "):
         # Generate or extract the ID based on idx_name
         if idx_name is None:
             # Generate a zero-padded sequential ID with prefix
-            clean_prefix = prefix.rstrip('_')  # Remove trailing underscore if present
-            idx = f"{clean_prefix}_{str(current_id).zfill(id_padding)}"
+            idx = f"{prefix}_{str(current_id).zfill(id_padding)}"
             current_id += 1
         else:
             # For existing IDs, still add the prefix if it's not already there
             raw_idx = instance[idx_name]
-            clean_prefix = prefix.rstrip('_')
-            if not raw_idx.startswith(f"{clean_prefix}_"):
-                idx = f"{clean_prefix}_{raw_idx}"
-            else:
-                idx = raw_idx
+            idx = f"{prefix}_{raw_idx}"
         
         # Extract audio and transcription data
         transcription = instance[transcription_name]
@@ -80,8 +92,7 @@ def save_dataset_to_flac(
                 target_sr=sample_rate
             )
         
-        # Create and save FLAC file with the ID (generated or extracted)
-        # Don't add prefix here since it's already in the idx
+        # Create and save FLAC file with the ID
         audio_path = os.path.join(output_dir, f"{idx}.flac")
         sf.write(audio_path, audio_array, sample_rate)
         
@@ -105,9 +116,8 @@ def save_dataset_to_flac(
     print(f"- Files saved to: {output_dir}")
     print(f"- Metadata saved to: {os.path.join(output_dir, 'metadata.tsv')}")
     
-    
 # Example usage for cv16 (you can create similar functions for other datasets):
-def save_cv16(dataset_path: str, output_dir: str) -> None:
+def save_cv16(dataset_path: str, output_dir: str, prefix: str) -> None:
     """
     Converts CV16 dataset to FLAC files with metadata TSV.
     
@@ -116,16 +126,32 @@ def save_cv16(dataset_path: str, output_dir: str) -> None:
         output_dir (str): Directory where files will be saved
     """
     save_dataset_to_flac(
-        idx_name = "client_id", # id for ASCEND
+        idx_name = None, # id for ASCEND
         transcription_name = "sentence", # transcription for ASCEND, 
         audio_array_name = "audio", 
         dataset_path = dataset_path,
         output_dir = output_dir,
-        prefix = "CV16_"
+        prefix = prefix
     )
     
+def save_minnan_sentence(dataset_path: str, output_dir: str, prefix: str) -> None:
+    """
+    Converts CV16 dataset to FLAC files with metadata TSV.
+    
+    Args:
+        dataset_path (str): Path to the saved ASCEND dataset
+        output_dir (str): Directory where files will be saved
+    """
+    save_dataset_to_flac(
+        idx_name = None, # id for ASCEND
+        transcription_name = "chinese", # transcription for ASCEND, 
+        audio_array_name = "audio", 
+        dataset_path = dataset_path,
+        output_dir = output_dir,
+        prefix = prefix
+    )
 
-def save_ML(dataset_path: str, output_dir: str) -> None:
+def save_ML(dataset_path: str, output_dir: str, prefix: str) -> None:
     """
     Converts ML2021 dataset to FLAC files with metadata TSV. This function uses
     auto-generated sequential IDs since the dataset doesn't have unique identifiers.
@@ -140,11 +166,11 @@ def save_ML(dataset_path: str, output_dir: str) -> None:
         idx_name=None,                  # This will trigger sequential ID generation
         transcription_name="transcription",
         audio_array_name="audio",
-        prefix="ML2021_"
+        prefix=prefix
     )
     
 # Example of how you could create an ASCEND version:
-def save_ascend(dataset_path: str, output_dir: str) -> None:
+def save_ascend(dataset_path: str, output_dir: str, prefix: str) -> None:
     """
     Converts ASCEND dataset to FLAC files with metadata TSV. This function is specifically
     configured for the ASCEND dataset structure.
@@ -159,16 +185,15 @@ def save_ascend(dataset_path: str, output_dir: str) -> None:
         idx_name="id",                  # Assuming ASCEND uses 'id' for unique identifiers
         transcription_name="transcription",      # Assuming ASCEND uses 'transcription' for transcriptions
         audio_array_name="audio",       # Standard audio field name
-        prefix="ASCEND_"               # Adding ASCEND prefix to output files
+        prefix=prefix               # Adding ASCEND prefix to output files
     )
-    
     
 
 def merge_tsv_files(
     tsv_files: List[str],
     output_path: str,
     check_duplicates: bool = True,
-    duplicate_cols: Optional[List[str]] = None
+    duplicate_cols: Optional[List[str]] = "idx"
 ) -> pd.DataFrame:
     """
     Merge multiple TSV files with identical column structure into a single TSV file.
@@ -239,45 +264,76 @@ def merge_tsv_files(
     
     
 if __name__ == "__main__":
-    # save_ML(
-    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/ML2021_ASR_ST',
-    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ML2021'
-    # )
     
-    # save_ML(
-    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_test/ML2021_ASR_ST',
-    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ML2021'
-    # )
+    # VALID & TEST set
+    save_ML(
+        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/ML2021_ASR_ST',
+        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ML2021_EVAL',
+        prefix='ML2021_EVAL'
+    )
     
-    # save_cv16(
-    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/CV16',
-    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/CV16'
-    # )
+    save_ML(
+        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_test/ML2021_ASR_ST',
+        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ML2021_TEST',
+        prefix='ML2021_TEST'
+    )
     
-    # save_cv16(
-    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_test/CV16',
-    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/CV16'
-    # )
+    save_cv16(
+        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/CV16',
+        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/CV16_EVAL',
+        prefix='CV16_EVAL'
+    )
     
-    # save_ascend(
-    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/ASCEND',
-    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ASCEND'
-    # )
-    # save_ascend(
-    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_test/ASCEND',
-    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ASCEND'
-    # )
+    save_cv16(
+        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_test/CV16',
+        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/CV16_TEST',
+        prefix='CV16_TEST'
+    )
     
-    test_sets = [
-        "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ASCEND/metadata.tsv",
-        "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/CV16/metadata.tsv",
-        "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ML2021/metadata.tsv"
-    ]
-    valid_sets = [
-        "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ASCEND/metadata.tsv",
-        "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/CV16/metadata.tsv",
-        "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ML2021/metadata.tsv"
-    ]
+    save_ascend(
+        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/ASCEND',
+        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ASCEND_EVAL',
+        prefix='ASCEND_EVAL'
+    )
+    save_ascend(
+        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_test/ASCEND',
+        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ASCEND_TEST',
+        prefix='ASCEND_TEST'
+    )
     
-    merge_tsv_files(tsv_files=test_sets, output_path="/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ACM_test.tsv")
-    merge_tsv_files(tsv_files=valid_sets, output_path="/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ACM_valid.tsv")
+    # TRAINING set
+    save_cv16(
+        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_train/CV17_train_minnan',
+        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/CV17_TRAIN_MINNAN',
+        prefix='CV17_TRAIN_MINNAN'
+    )
+    save_cv16(
+        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_train/CV16_train',
+        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/CV16_TRAIN',
+        prefix='CV16_TRAIN'
+    )
+    save_cv16(
+        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_train/CV16_other',
+        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/CV16_OTHER',
+        prefix='CV16_OTHER'
+    )
+    save_minnan_sentence(
+        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_train/sentences_minnan',
+        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/MINNAN',
+        prefix='MINNAN'
+    )
+    
+    # Merge
+    # test_sets = [
+    #     "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ASCEND_TEST/metadata.tsv",
+    #     "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/CV16_TEST/metadata.tsv",
+    #     "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ML2021_TEST/metadata.tsv"
+    # ]
+    # valid_sets = [
+    #     "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ASCEND_EVAL/metadata.tsv",
+    #     "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/CV16_EVAL/metadata.tsv",
+    #     "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ML2021_EVAL/metadata.tsv"
+    # ]
+    
+    # merge_tsv_files(tsv_files=test_sets, output_path="/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ACM_TEST.tsv")
+    # merge_tsv_files(tsv_files=valid_sets, output_path="/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ACM_EVAL.tsv")

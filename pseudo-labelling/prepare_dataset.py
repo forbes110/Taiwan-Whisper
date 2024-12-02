@@ -38,9 +38,13 @@ def read_pseudo_labels(csv_fpath):
         reader = csv.reader(f)
         next(reader)  # Skip header
         for row in reader:
-            if len(row) != 4:
+            
+            if len(row) == 4:
+                speaker, start, end, text = row
+            elif len(row) == 3:
+                start, end, text = row
+            else:
                 continue
-            speaker, start, end, text = row
             segments.append((float(start.rstrip('s')), float(end.rstrip('s')), text.strip()))
     return segments
 
@@ -153,7 +157,9 @@ def segment_audio(audio_dir, trans_dir, segment_output_dir):
     """Process all audio files based on their transcriptions."""
     pseudo_label_fpath = {}
 
+    # print("trans_dir", trans_dir)
     trans_fpaths = glob.glob(osp.join(trans_dir, '*.csv'))
+    # print("==========================trans_fpaths", trans_fpaths)
     
     for trans_fpath in tqdm(trans_fpaths, desc="Parsing transcriptions..."):
         file_name = osp.basename(trans_fpath).split('.')[0]
@@ -165,7 +171,6 @@ def segment_audio(audio_dir, trans_dir, segment_output_dir):
     # print("trans_fpaths:", trans_fpaths)
     # print("audio_dir:", audio_dir) 
     audio_fpaths = glob.glob(osp.join(audio_dir, '*.m4a')) + glob.glob(osp.join(audio_dir, '*.flac'))
-    
     # print("audio_fpaths:", audio_fpaths)
 
     for audio_fpath in audio_fpaths:
