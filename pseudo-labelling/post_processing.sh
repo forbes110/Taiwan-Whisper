@@ -18,9 +18,9 @@ python3 simp2trad.py \
 
 
 
+# python3 simp2trad.py \
+#     --path /mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ASCEND_TEST/metadata.tsv \
+#     --output overwrite
 python3 simp2trad.py \
-    --path /mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ASCEND_TEST/metadata.tsv \
-    --output overwrite
-python3 simp2trad.py \
-    --path /mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ASCEND_EVAL/metadata.tsv \
+    --path /mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/ASCEND_TRAIN/metadata.tsv \
     --output overwrite

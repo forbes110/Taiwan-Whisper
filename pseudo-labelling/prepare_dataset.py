@@ -95,27 +95,29 @@ def segment_audio_by_trans(audio_trans_pair, segment_output_dir):
             # save 30 sec
             if e_frame - prev_end_frame > SEGMENT_LENGTH:
                 cur_end_frame = prev_end_frame + SEGMENT_LENGTH
+                
+                if prev_end_frame != prev_seg_end_frame:
 
-                # Segment audio within the allowed range
-                segmented_audio = audio_data[prev_end_frame:prev_seg_end_frame]
+                    # Segment audio within the allowed range
+                    segmented_audio = audio_data[prev_end_frame:prev_seg_end_frame]
 
-                if cur_end_frame - s_frame > ADD_CONTINUED_TOKEN_THRESHOLD * SAMPLE_RATE:
-                    cur_text += s_timetag + "<|continued|>"
+                    if cur_end_frame - s_frame > ADD_CONTINUED_TOKEN_THRESHOLD * SAMPLE_RATE:
+                        cur_text += s_timetag + "<|continued|>"
 
-                cur_text += "<|endoftext|>"
+                    cur_text += "<|endoftext|>"
 
-                segment_output_fpath = osp.join(
-                    audio_output_dir, f"{file_name}_{prev_end_frame}-{prev_seg_end_frame}.flac"
-                )
+                    segment_output_fpath = osp.join(
+                        audio_output_dir, f"{file_name}_{prev_end_frame}-{prev_seg_end_frame}.flac"
+                    )
 
-                # Save audio segment using soundfile
-                sf.write(segment_output_fpath, segmented_audio, SAMPLE_RATE)
+                    # Save audio segment using soundfile
+                    sf.write(segment_output_fpath, segmented_audio, SAMPLE_RATE)
 
-                # Save transcription
-                with open(osp.join(audio_output_dir, f"{file_name}_{prev_end_frame}-{prev_seg_end_frame}.txt"), 'w') as f:
-                    f.write(cur_text + "\n")
-                    f.write(f"\n{s_timetag}{text}{e_timetag}\n")
-                    f.write(f"\n{prev_text}\n")
+                    # Save transcription
+                    with open(osp.join(audio_output_dir, f"{file_name}_{prev_end_frame}-{prev_seg_end_frame}.txt"), 'w') as f:
+                        f.write(cur_text + "\n")
+                        f.write(f"\n{s_timetag}{text}{e_timetag}\n")
+                        f.write(f"\n{prev_text}\n")
                     
                 # NEXT FILE
 

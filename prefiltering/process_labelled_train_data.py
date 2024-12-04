@@ -1,164 +1,82 @@
-"""
-Process Training set:
-DaAi Drama & CV16(train+others)
-"""
-
-from datasets import load_from_disk
+import argparse
+import pandas as pd
 import soundfile as sf
 import os
+import math
 import librosa
-from tqdm import tqdm
-import pandas as pd
-from typing import List, Optional
+import numpy as np
 
-from datasets import load_from_disk
-import soundfile as sf
-import os
-import librosa
-from tqdm import tqdm
-import pandas as pd
+def round_to_nearest_002(number):
+    """將數字四捨五入到最接近的 0.02 的倍數，且確保不小於 0.02"""
+    rounded = round(number / 0.02) * 0.02
+    return max(0.02, rounded)
 
-def save_dataset_to_flac(
-    dataset_path: str,
-    output_dir: str,
-    idx_name: str | None,
-    transcription_name: str,
-    audio_array_name: str = "audio",
-    prefix: str = "",
-    sample_rate: int = 16000
-) -> None:
-    """
-    Converts audio data from a Hugging Face dataset to FLAC files and creates a metadata TSV.
-    The function now handles cases where idx_name is None by generating sequential IDs with prefix.
+def resample_and_save(input_path, output_path, target_sr=16000):
+    """重採樣音頻文件並保存"""
+    # 讀取音頻
+    audio, sr = librosa.load(input_path, sr=None)
     
-    Args:
-        dataset_path (str): Path to the saved Hugging Face dataset
-        output_dir (str): Directory where FLAC files and metadata will be saved
-        idx_name (str | None): Name of the field containing the unique identifier in the dataset.
-                              If None, sequential IDs will be generated with prefix.
-        transcription_name (str): Name of the field containing the text transcription
-        audio_array_name (str): Name of the field containing the audio data (default: "audio")
-        prefix (str): Prefix to add to output filenames (default: "")
-        sample_rate (int): Target sampling rate in Hz (default: 16000)
+    # 如果採樣率不是16000Hz，進行重採樣
+    if sr != target_sr:
+        audio = librosa.resample(y=audio, orig_sr=sr, target_sr=target_sr)
     
-    Returns:
-        None: Files are saved to disk
-    """
-    # Load dataset and ensure output directory exists
-    dataset = load_from_disk(dataset_path)
-    os.makedirs(output_dir, exist_ok=True)
+    # 確保輸出目錄存在
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
-    # Initialize counter for generating sequential IDs
-    current_id = 1
+    # 保存為 FLAC 格式
+    sf.write(output_path, audio, target_sr, format='FLAC')
     
-    # Calculate padding width based on dataset size for consistent ID formatting
-    # This ensures all IDs will have the same number of digits (e.g., 001, 002, ...)
-    id_padding = len(str(len(dataset)))
-    
-    records = []
-    for instance in tqdm(dataset, desc=f"Processing {prefix.strip('_')} files"):
-        # Generate or extract the ID based on idx_name
-        if idx_name is None:
-            # Generate a zero-padded sequential ID with prefix
-            clean_prefix = prefix.rstrip('_')  # Remove trailing underscore if present
-            idx = f"{clean_prefix}_{str(current_id).zfill(id_padding)}"
-            current_id += 1
-        else:
-            # For existing IDs, still add the prefix if it's not already there
-            raw_idx = instance[idx_name]
-            clean_prefix = prefix.rstrip('_')
-            if not raw_idx.startswith(f"{clean_prefix}_"):
-                idx = f"{clean_prefix}_{raw_idx}"
-            else:
-                idx = raw_idx
-                
-        audio_path = os.path.join(output_dir, f"{idx}.flac")
-        sf.write(audio_path, audio_array, sample_rate)
-        
-        """
-        Concept: 
-        
-        1. Saved to flac first.
-        
-        2. Process text by <|0.00|>transcription<|x.xx|><|endfortext|> and saved to the same dir as audio(maybe at final_dataset) add a new function to process things above.
-        """
-        
-        # Extract audio and transcription data
-        transcription = instance[transcription_name]
-        audio_array = instance[audio_array_name]['array']
-        original_sr = instance[audio_array_name]['sampling_rate']
-        
-        # Resample audio if needed
-        if original_sr != sample_rate:
-            audio_array = librosa.resample(
-                audio_array, 
-                orig_sr=original_sr, 
-                target_sr=sample_rate
-            )
-        
+    return audio, target_sr
 
-        audio_path = os.path.join(output_dir, f"{idx}.flac")
-        sf.write(audio_path, audio_array, sample_rate)
+def process_file(file_name):
+    """處理 TSV 文件，重採樣音頻並生成對應的文本文件"""
+    # 讀取 TSV 文件
+    df = pd.read_csv(file_name, sep='\t')
+    
+    for _, row in df.iterrows():
+        idx = row['idx']
+        transcription = row['transcription']
+        audio_path = row['audio_path']
         
+        # 構建重採樣後的音頻輸出路徑
+        output_dir = os.path.dirname(audio_path)
+        resampled_audio_path = audio_path  # 直接覆蓋原檔案
         
-        """
-        TODO: make tsv like
-        /mnt/home/ntuspeechlabtaipei1/forbes/data_pair/0a7f107e-8015-403d-bed3-a1f9d7511bbf
-        10d16d61-f63f-4cdf-ab3f-766116753cb9/10d16d61-f63f-4cdf-ab3f-766116753cb9_13384000-13862400.flac
-        10d16d61-f63f-4cdf-ab3f-766116753cb9/10d16d61-f63f-4cdf-ab3f-766116753cb9_7645120-8121920.flac
-        10d16d61-f63f-4cdf-ab3f-766116753cb9/10d16d61-f63f-4cdf-ab3f-766116753cb9_8121920-8601600.flac
-        10d16d61-f63f-4cdf-ab3f-766116753cb9/10d16d61-f63f-4cdf-ab3f-766116753cb9_25810880-26286080.flac
-        10d16d61-f63f-4cdf-ab3f-766116753cb9/10d16d61-f63f-4cdf-ab3f-766116753cb9_33938880-34417280.flac
-        10d16d61-f63f-4cdf-ab3f-766116753cb9/10d16d61-f63f-4cdf-ab3f-766116753cb9_13862400-14342240.flac
-        10d16d61-f63f-4cdf-ab3f-766116753cb9/10d16d61-f63f-4cdf-ab3f-766116753cb9_5263040-5741120.flac
-        10d16d61-f63f-4cdf-ab3f-766116753cb9/10d16d61-f63f-4cdf-ab3f-766116753cb9_35374400-35853440.flac
-        10d16d61-f63f-4cdf-ab3f-766116753cb9/10d16d61-f63f-4cdf-ab3f-766116753cb9_21506240-21983680.flac
-        10d16d61-f63f-4cdf-ab3f-766116753cb9/10d16d61-f63f-4cdf-ab3f-766116753cb9_9079040-9556480.flac
-        ...
-        With first row common metadata paths
-        if replace the "flac" with "text" will find the text
-        Note that there are no "prev", only current text, check the format of data_pair
-        """
+        # 重採樣音頻文件
+        audio, sr = resample_and_save(audio_path, resampled_audio_path)
         
+        # 計算新的音頻時長
+        duration = len(audio) / sr
+        rounded_duration = round_to_nearest_002(duration)
         
-        # Store metadata including the ID used
-        # records.append({
-        #     'idx': idx,
-        #     'transcription': transcription,
-        #     'audio_path': audio_path
-        # })
+        # 構建輸出文本
+        output_text = f"<|0.02|>{transcription} <|{rounded_duration:.2f}|><|endfortext|>"
+        
+        # 構建文本輸出路徑
+        output_file = os.path.join(output_dir, f"{idx}.txt")
+        
+        # 寫入文件
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(output_text)
+        
+        print(f"已處理：{idx}")
+        print(f"  - 重採樣至 16000Hz")
+        print(f"  - 生成文本文件：{output_file}")
+
+def main():
+    parser = argparse.ArgumentParser(description='處理音頻元數據，重採樣音頻並生成文本文件')
+    parser.add_argument('--file_name', required=True, help='TSV 文件的路徑')
+    args = parser.parse_args()
     
-    # TODO: saved here, remember to add metapath at first line
-    
-    # Save metadata TSV
-    df = pd.DataFrame(records)
-    df.to_csv(os.path.join(output_dir, 'metadata.tsv'), 
-              sep='\t', 
-              index=False, 
-              encoding='utf-8-sig')
-    
-    # Print summary of processing
-    print(f"\nProcessing complete:")
-    print(f"- Total files processed: {len(records)}")
-    print(f"- Files saved to: {output_dir}")
-    print(f"- Metadata saved to: {os.path.join(output_dir, 'metadata.tsv')}")
+    process_file(args.file_name)
+
+if __name__ == "__main__":
+    main()
     
     
-# Example usage for cv16 (you can create similar functions for other datasets):
-def save_cv16(dataset_path: str, output_dir: str) -> None:
-    """
-    Converts CV16 dataset to FLAC files with metadata TSV.
     
-    Args:
-        dataset_path (str): Path to the saved ASCEND dataset
-        output_dir (str): Directory where files will be saved
-    """
-    save_dataset_to_flac(
-        idx_name = "client_id", # id for ASCEND
-        transcription_name = "sentence", # transcription for ASCEND, 
-        audio_array_name = "audio", 
-        dataset_path = dataset_path,
-        output_dir = output_dir,
-        prefix = "CV16_"
-    )
-    
+"""
+python3 /mnt/home/ntuspeechlabtaipei1/forbes/Taiwan-Whisper/prefiltering/process_labelled_train_data.py --file_name /mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/ASCEND_TRAIN/metadata.tsv
+python3 /mnt/home/ntuspeechlabtaipei1/forbes/Taiwan-Whisper/prefiltering/process_labelled_train_data.py --file_name /mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/CV16_OTHER/metadata.tsv
+python3 /mnt/home/ntuspeechlabtaipei1/forbes/Taiwan-Whisper/prefiltering/process_labelled_train_data.py --file_name /mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/CV16_TRAIN/metadata.tsv
+"""

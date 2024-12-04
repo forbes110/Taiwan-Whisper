@@ -8,54 +8,7 @@ from functools import partial
 from pypinyin import pinyin, lazy_pinyin, Style
 from g2p_en import G2p # too slow, should use lexicon instead
 import edit_distance
-from datasets import IterableDataset, Features
-import os
-import os.path as osp
-import numpy as np
-import argparse
-import datasets
-from copy import deepcopy
-from time import sleep
-from accelerate import Accelerator
-from accelerate.logging import get_logger
-from torch.utils.data import DataLoader, Dataset, DistributedSampler
-import soundfile as sf
-import re
-
-sampling_rate = 16000
-lexicon_fpath = '/knowledge-distillation/lexicon.lst'
-
-
-def _trim_last_segment(feature: Features):
-    timestamp_re_pattern = r"<\|\d{1,2}\.\d{2}\|>"
-    timestamps = re.findall(timestamp_re_pattern, feature["whisper_transcript"])
-    if len(timestamps) > 1:
-        last_timestamp = timestamps[-1]
-        # 1. "<|0.00|>...<|29.00|><|29.00|><|continued|>" -> "<|0.00|>...<|29.00|>"
-        # 2. "<|0.00|>...<|29.00|>" -> "<|0.00|>...<|29.00|>"
-        feature["whisper_transcript"] = feature["whisper_transcript"].split(last_timestamp)[0] + last_timestamp 
-        trim_start_frame = int(float(last_timestamp[2:-2]) * sampling_rate)
-        if trim_start_frame < len(feature["audio"]["array"]):
-            feature["audio"]["array"] = feature["audio"]["array"][:trim_start_frame]
-    return feature
-
-def _append_last_segment(feature: Features):
-    # re search pattern: <|0.00|> ~ <|30.00|>. re expression: <\|(\d{2}\.\d{2})\|>
-    special_tokens_re_pattern = r"<\|[\w\.]{1,12}\|>"
-    special_tokens_of_whisper_transcript = re.findall(special_tokens_re_pattern, feature["whisper_transcript"])
-    if "<|continued|>" in special_tokens_of_whisper_transcript:
-        timestamp_before_continued = special_tokens_of_whisper_transcript[special_tokens_of_whisper_transcript.index("<|continued|>") - 1]
-        new_transcript = feature["whisper_transcript"].split(timestamp_before_continued)[0]
-        new_transcript += feature["last_segment_transcript"] + "<|endoftext|>"
-        feature["whisper_transcript"] = new_transcript
-    else:
-        new_transcript = feature["whisper_transcript"].split("<|endoftext|>")[0]
-        new_transcript += feature["last_segment_transcript"] + "<|endoftext|>"
-
-last_segment_handlers = {
-    "trim": _trim_last_segment,
-    "append": _append_last_segment
-}
+lexicon_fpath = './prefiltering/lexicon.lst'
 
 def cal_complete_mer(ref_data, hyp_data):
     S, D, I, N = (0, 0, 0, 0)
@@ -125,14 +78,13 @@ class MixErrorRate(object):
         if self.count_repetitive_hallucination:
             print("Count repetitive hallucination (6gram-5repeat)")
     
-    
     def _from_str_to_list(self, cs_string):
         cs_list = []
         cur_en_word = ''
         for s in cs_string:
             
             # if is space, skip it
-            if s in [' ', '\t', '\n', '\r', ',', '.', '!', '?', '。', '，', '！', '？', '、', '；', '：', '「', '」', '『', '』', '（', '）', '(', ')', '[', ']', '{', '}', '<', '>', '《', '》', '“', '”', '‘', '’', '…', '—', '～', '·', '•']:
+            if s in [' ', '\t', '\n', '\r', ',', '.', '!', '?', '。', '，', '！', '？', '、', '；', '：', '「', '」', '『', '』', '（', '）', '(', ')', '\[', '\]', '{', '}', '<', '>', '《', '》', '“', '”', '‘', '’', '…', '—', '～', '·', '•']:
                 if cur_en_word != '':
                     cs_list.append(cur_en_word)
                     cur_en_word = ''
@@ -307,161 +259,6 @@ def main(args):
     predictions, references = load_output_csv(args.csv_fpath)
     mer_value = mer.compute(predictions=predictions, references=references)
     print(f"Mix Error Rate: {mer_value}")
-    
-def load_audio_fpaths(manifest_fpath, root=None):
-    audio_fpaths = []
-    with open(manifest_fpath, "r") as fr:
-        if root is None:
-            root = fr.readline().strip()
-        else:
-            _ = fr.readline()
-        for line in fr:
-            audio_fpath = osp.join(root, line.strip())
-            audio_fpaths.append(audio_fpath)
-    return audio_fpaths
-
-def customized_data_generator(audio_fpaths, last_segment_handler_type="trim"):
-    for idx, audio_fpath in enumerate(audio_fpaths):
-        feature = _get_feature_by_audio_fpath(audio_fpath, last_segment_handler_type=last_segment_handler_type)
-        feature["batch_id"] = idx
-        yield feature
-
-def load_customized_dataset(manifest_fpath, root=None) -> IterableDataset:
-    print(f"Loading customized dataset from {manifest_fpath}")
-    audio_fpaths = load_audio_fpaths(manifest_fpath, root=root)
-    ex_feature = Features()
-    ex_feature["audio"] = "dummy"
-    ex_feature["text"] = "dummy"
-    ex_feature['whisper_transcript'] = "dummy"
-    ex_feature['last_segment_transcript'] = "dummy"
-    ex_feature['condition_on_prev'] = "dummy"
-    ex_feature['batch_id'] = "dummy"  
-    customized_dataset = IterableDataset.from_generator(
-        customized_data_generator, 
-        features=ex_feature, 
-        gen_kwargs={"audio_fpaths": audio_fpaths}
-    )
-
-    return customized_dataset, audio_fpaths
-
-
-def _trim_last_segment(feature: Features):
-    timestamp_re_pattern = r"<\|\d{1,2}\.\d{2}\|>"
-    timestamps = re.findall(timestamp_re_pattern, feature["whisper_transcript"])
-    if len(timestamps) > 1:
-        last_timestamp = timestamps[-1]
-        # 1. "<|0.00|>...<|29.00|><|29.00|><|continued|>" -> "<|0.00|>...<|29.00|>"
-        # 2. "<|0.00|>...<|29.00|>" -> "<|0.00|>...<|29.00|>"
-        feature["whisper_transcript"] = feature["whisper_transcript"].split(last_timestamp)[0] + last_timestamp 
-        trim_start_frame = int(float(last_timestamp[2:-2]) * sampling_rate)
-        if trim_start_frame < len(feature["audio"]["array"]):
-            feature["audio"]["array"] = feature["audio"]["array"][:trim_start_frame]
-    return feature
-
-def _append_last_segment(feature: Features):
-    # re search pattern: <|0.00|> ~ <|30.00|>. re expression: <\|(\d{2}\.\d{2})\|>
-    special_tokens_re_pattern = r"<\|[\w\.]{1,12}\|>"
-    special_tokens_of_whisper_transcript = re.findall(special_tokens_re_pattern, feature["whisper_transcript"])
-    if "<|continued|>" in special_tokens_of_whisper_transcript:
-        timestamp_before_continued = special_tokens_of_whisper_transcript[special_tokens_of_whisper_transcript.index("<|continued|>") - 1]
-        new_transcript = feature["whisper_transcript"].split(timestamp_before_continued)[0]
-        new_transcript += feature["last_segment_transcript"] + "<|endoftext|>"
-        feature["whisper_transcript"] = new_transcript
-    else:
-        new_transcript = feature["whisper_transcript"].split("<|endoftext|>")[0]
-        new_transcript += feature["last_segment_transcript"] + "<|endoftext|>"
-
-
-def load_customized_eval_dataset(eval_dataset_path):
-    """
-    Load a customized evaluation dataset from a TSV file containing audio paths and transcriptions.
-    
-    Args:
-        eval_dataset_path (str): Path to the TSV file containing evaluation dataset information
-        
-    Returns:
-        tuple: (IterableDataset, list of audio paths)
-            - IterableDataset containing the audio features and transcripts
-            - List of audio file paths for reference
-    """
-    # Read the TSV file using pandas
-    df = pd.read_csv(eval_dataset_path, sep='\t')
-    audio_fpaths = df['audio'].tolist()
-    
-    def eval_data_generator(audio_fpaths, transcripts):
-        """
-        Generator function to yield features for each audio file in the evaluation dataset.
-        
-        Args:
-            audio_fpaths (list): List of paths to audio files
-            transcripts (list): List of corresponding transcripts
-        """
-        for idx, (audio_fpath, transcript) in enumerate(zip(audio_fpaths, transcripts)):
-            # Create feature dictionary for each sample
-            feature = Features()
-            
-            # Load audio data
-            audio_data = sf.read(audio_fpath)[0]
-            
-            # Populate feature dictionary
-            feature["audio"] = {
-                "path": audio_fpath,
-                "sampling_rate": 16000,  # Using global sampling_rate from original code
-                "array": audio_data
-            }
-            
-            # Set transcript and required fields
-            feature["text"] = transcript
-            # Initialize other fields with empty values since they're not needed for evaluation
-            yield feature
-    
-    # Create example feature structure for dataset initialization
-    ex_feature = Features()
-    ex_feature["audio"] = "dummy"
-    ex_feature["text"] = "dummy"
-    
-    # Create IterableDataset
-    eval_dataset = IterableDataset.from_generator(
-        eval_data_generator,
-        features=ex_feature,
-        gen_kwargs={
-            "audio_fpaths": audio_fpaths,
-            "transcripts": df['text'].tolist()
-        }
-    )
-    return eval_dataset, audio_fpaths
-
-
-def _get_feature_by_audio_fpath(audio_fpath, last_segment_handler_type="trim"):
-    feature = Features()
-    audio_data = sf.read(audio_fpath)[0]
-    feature["audio"] = {
-        "path": audio_fpath,
-        "sampling_rate": sampling_rate,
-        "array": audio_data
-    }
-    with open(audio_fpath.replace(".flac", ".txt"), "r") as trans_fr:
-        lines = trans_fr.readlines()
-        
-        whisper_transcript = lines[0].strip().split("<|endoftext|>")[0] # remove <|endoftext|>
-        end_transcript = lines[2].strip()
-        prev_transcript = lines[4].strip().split("<|endoftext|>")[0] # remove <|endoftext|>
-        
-        feature["whisper_transcript"] = whisper_transcript
-        feature["last_segment_transcript"] = end_transcript
-        feature["condition_on_prev"] = "<|startofprev|>" + prev_transcript
-        
-        if "<|continued|>" in prev_transcript:
-            timestamp_re_pattern = r"<\|\d{1,2}\.\d{2}\|>"
-            timestamps = re.findall(timestamp_re_pattern, feature["condition_on_prev"])
-            if len(timestamps) > 1:
-                last_timestamp = timestamps[-1]
-                # 1. "<|0.00|>...<|29.00|><|29.00|><|continued|>" -> "<|0.00|>...<|29.00|>"
-                # 2. "<|0.00|>...<|29.00|>" -> "<|0.00|>...<|29.00|>"
-                feature["condition_on_prev"] = feature["condition_on_prev"].split(last_timestamp)[0] + last_timestamp
-                feature["condition_on_prev"].replace("<|continued|>", "") # ensure that there is no "<|continued|>" in the condition_on_prev
-        feature = last_segment_handlers[last_segment_handler_type](feature)
-    return feature
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Compute Mix Error Rate")
@@ -474,4 +271,3 @@ if __name__ == "__main__":
     parser.add_argument("--calculate_complete_mer", action="store_true", help="Calculate complete MER")
     args = parser.parse_args()
     main(args)
-

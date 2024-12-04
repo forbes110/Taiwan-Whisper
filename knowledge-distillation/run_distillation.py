@@ -66,7 +66,7 @@ from transformers.modeling_outputs import BaseModelOutput
 from transformers.models.whisper.english_normalizer import BasicTextNormalizer, EnglishTextNormalizer
 from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
-from utils import MixErrorRate, load_customized_dataset
+from utils import MixErrorRate, load_customized_dataset, load_customized_eval_dataset
 
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
@@ -166,6 +166,12 @@ class ModelArguments:
         default=0.1,
         metadata={
             "help": "ratio of audio will pass to augmentation"
+        }
+    )
+    lr_scheduler: str = field(
+        default=None,
+        metadata={
+            "help": "lr scheduler"
         }
     )
 
@@ -323,7 +329,7 @@ class DataTrainingArguments:
         },
     )
     eval_dataset_path: str = field(
-        default="/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ACM.tsv",
+        default=None,
         metadata={
             "help": "The dataset path of eval dataset(.tsv) file"
         },
@@ -1069,33 +1075,19 @@ def main():
             dataset_dict = dataset_names_dict[0]
             all_eval_splits.append("eval")
             
-            # raw_datasets["eval"] = load_dataset(
-            #     dataset_dict["name"],
-            #     dataset_dict["config"],
-            #     split=dataset_dict["split"],
-            #     cache_dir=data_args.dataset_cache_dir,
-            #     token=model_args.token,
-            #     streaming=data_args.streaming,
-            #     trust_remote_code=True
-            # )
-            
-            features = datasets.Features({
-                "idx": datasets.Value("string"),
-                "text": datasets.Value("string"),
-                "audio": datasets.Audio(sampling_rate=16000)  
-            })
-            
-            raw_datasets["eval"] = load_dataset(
-                "csv",
-                data_files=data_args.eval_dataset_path,
-                delimiter="\t",
-                column_names=["idx", "transcription", "audio_path"],
-                features=features,
-                cache_dir=data_args.dataset_cache_dir,
-                streaming=data_args.streaming,
-                trust_remote_code=True
-            )["train"]  # Since we're not splitting, we use the 'train' split that load_dataset creates by default
-                    
+            if data_args.eval_dataset_path:
+                raw_datasets["eval"], audio_paths = load_customized_eval_dataset(data_args.eval_dataset_path)
+                
+            else:
+                raw_datasets["eval"] = load_dataset(
+                    dataset_dict["name"],
+                    dataset_dict["config"],
+                    split=dataset_dict["split"],
+                    cache_dir=data_args.dataset_cache_dir,
+                    token=model_args.token,
+                    streaming=data_args.streaming,
+                    trust_remote_code=True
+                )
             if data_args.eval_text_column_name != "text":
                 raw_datasets["eval"] = raw_datasets["eval"].rename_column(data_args.eval_text_column_name, "text")
         else:
@@ -1633,12 +1625,18 @@ def main():
     )
 
     # LR scheduler gets stepped by `num_processes` each time -> account for this in warmup / total steps
-    lr_scheduler = get_scheduler(
-        name=training_args.lr_scheduler_type,
-        optimizer=optimizer,
-        num_warmup_steps=training_args.warmup_steps * accelerator.num_processes,
-        num_training_steps=total_train_steps * accelerator.num_processes,
-    )
+    if model_args.lr_scheduler == "cosine_with_warmup":
+        print("Use cosine_with_warmup, lr_scheduler_type is not used")
+        lr_scheduler = transformers.get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=training_args.warmup_steps * accelerator.num_processes, num_training_steps=total_train_steps * accelerator.num_processes)
+            
+    else:
+        lr_scheduler = get_scheduler(
+            name=training_args.lr_scheduler_type,
+            optimizer=optimizer,
+            num_warmup_steps=training_args.warmup_steps * accelerator.num_processes,
+            num_training_steps=total_train_steps * accelerator.num_processes,
+        )
+
 
     data_collator = DataCollatorSpeechSeq2SeqWithPadding(
         processor=processor,

@@ -1,128 +1,116 @@
-#!/usr/bin/env python3
-# Copyright (c) Facebook, Inc. and its affiliates.
-#
-# This source code is licensed under the MIT license found in the
-# LICENSE file in the root directory of this source tree.
-"""
-Data pre-processing: build vocabularies and binarize training data.
-"""
-
-import argparse
-import glob
 import os
-import random
-import tqdm
-import soundfile as sf
-import multiprocessing as mp
+from datetime import datetime
+import argparse
+import logging
+from typing import List, Tuple, Dict
+from concurrent.futures import ThreadPoolExecutor
 
-def get_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "root", metavar="DIR", help="root directory containing flac) files to index"
-    )
-    parser.add_argument(
-        "--valid-percent",
-        default=0.0,
-        type=float,
-        metavar="D",
-        help="percentage of data to use as validation set (between 0 and 1)",
-    )
-    parser.add_argument(
-        "--output_fname", default="train", type=str, metavar="NAME", help="output fname"
-    )
-    parser.add_argument(
-        "--dest", default=".", type=str, metavar="DIR", help="output directory"
-    )
-    parser.add_argument(
-        "--ext", default="flac", type=str, metavar="EXT", help="extension to look for"
-    )
-    parser.add_argument("--seed", default=42, type=int, metavar="N", help="random seed")
-    parser.add_argument(
-        "--path-must-contain",
-        default=None,
-        type=str,
-        metavar="FRAG",
-        help="if set, path must contain this substring for a file to be included in the manifest",
-    )
-    parser.add_argument(
-        "--path-must-not-contain",
-        default=None,
-        type=str,
-        # metavar="FRAG",
-        help="if set, path must contain this substring for a file to be included in the manifest",
-    )
-    parser.add_argument(
-        "--sort",
-        default=False,
-        action="store_true",
-        help="sort the list of files before writing them to the manifest",
-    )
-    parser.add_argument(
-        "--get-frames",
-        default=False,
-        action="store_true",
-        help="get the number of frames in the audio file",
-    )
-    return parser
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 
-def get_frames(file_path):
+def find_tsv_files(dir_path: str) -> List[str]:
+    """Get all TSV files in the specified directory"""
+    return [os.path.join(dir_path, f) for f in os.listdir(dir_path)]
+
+def process_tsv_file(tsv_file: str) -> Tuple[str, List[str]]:
+    """
+    Process a single TSV file and return the processed file paths
     
-    frames = sf.info(file_path).frames
-    return file_path, frames
-
-def main(args):
-    assert args.valid_percent >= 0 and args.valid_percent <= 1.0
-
-    if not os.path.exists(args.dest):
-        os.makedirs(args.dest)
-
-    dir_path = os.path.realpath(args.root)
-    search_path = os.path.join(dir_path, "**/*." + args.ext)
-    rand = random.Random(args.seed)
-
-    output_fname = args.output_fname
-    valid_fname = "valid" if output_fname == "train" else f"{output_fname}-valid"
-    valid_f = (
-        open(os.path.join(args.dest, f"{valid_fname}.tsv"), "w")
-        if args.valid_percent > 0
-        else None
-    )
-
-    with open(os.path.join(args.dest, f"{output_fname}.tsv"), "w") as train_f:
-        print(dir_path, file=train_f)
-
-        if valid_f is not None:
-            print(dir_path, file=valid_f)
+    Returns:
+        Tuple[str, List[str]]: (channel_name, list of processed paths)
+    """
+    try:
+        with open(tsv_file, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+            
+        if not lines:
+            logging.warning(f"Empty file: {tsv_file}")
+            return os.path.splitext(os.path.basename(tsv_file))[0], []
+            
+        # Extract channel name from first line
+        first_line = lines[0].strip()
+        data_pair_index = first_line.find('data_pair/')
+        if data_pair_index == -1:
+            logging.error(f"Cannot find 'data_pair/' in file: {tsv_file}")
+            return os.path.splitext(os.path.basename(tsv_file))[0], []
+            
+        channel = first_line[data_pair_index + len('data_pair/'):].strip()
         
+        # Process remaining lines
+        processed_paths = []
+        for line in lines[1:]:
+            paths = line.strip().split()
+            processed_line = ' '.join(f"{channel}/{path}" for path in paths)
+            if processed_line:
+                processed_paths.append(processed_line)
+                
+        return os.path.splitext(os.path.basename(tsv_file))[0], processed_paths
+    except Exception as e:
+        logging.error(f"Error processing file {tsv_file}: {str(e)}")
+        return os.path.splitext(os.path.basename(tsv_file))[0], []
+
+def merge_channels(dir_path: str, output_dir: str, workers: int):
+    """Merge multiple TSV files using multi-threading"""
+    os.makedirs(output_dir, exist_ok=True)
+    
+    tsv_files = find_tsv_files(dir_path)
+    logging.info(f"Found {len(tsv_files)} TSV files to process")
+    
+    # Collect processing results and statistics
+    all_processed_lines = []
+    channel_stats = {}
+    
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        future_to_file = {executor.submit(process_tsv_file, tsv_file): tsv_file 
+                         for tsv_file in tsv_files}
         
-        file_paths = [os.path.realpath(fname) for fname in glob.iglob(search_path, recursive=True)]
-        if args.get_frames:
-            pool = mp.Pool(processes=64)
-            file_paths_and_frames = list(tqdm.tqdm(pool.imap_unordered(get_frames, file_paths), total=len(file_paths)))
-        else:
-            file_paths_and_frames = [(file_path, None) for file_path in file_paths]
-        if args.sort:
-            file_paths_and_frames = sorted(file_paths_and_frames, key=lambda x: x[0])
+        for future in future_to_file:
+            try:
+                channel_name, processed_lines = future.result()
+                all_processed_lines.extend(processed_lines)
+                channel_stats[channel_name] = len(processed_lines)
+            except Exception as e:
+                logging.error(f"Error executing task: {str(e)}")
+    
+    # Generate output filenames
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_file = os.path.join(output_dir, f"train_{timestamp}.tsv")
+    info_file = os.path.join(output_dir, f"train_{timestamp}_info.txt")
+    
+    # Write merged file
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write("/mnt/home/ntuspeechlabtaipei1/forbes/data_pair\n")
+        for line in all_processed_lines:
+            f.write(f"{line}\n")
+    
+    # Write info file
+    with open(info_file, 'w', encoding='utf-8') as f:
+        total_lines = sum(channel_stats.values())
+        f.write(f"Merge Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"Total Files: {len(channel_stats)}\n")
+        f.write(f"Total Lines: {total_lines}\n\n")
+        
+        f.write("File Statistics:\n")
+        f.write("-" * 50 + "\n")
+        for channel, line_count in sorted(channel_stats.items()):
+            f.write(f"File: {channel}.tsv\n")
+            f.write(f"Lines: {line_count}\n")
+            f.write("-" * 50 + "\n")
+    
+    logging.info(f"Merge completed, output file: {output_file}")
+    logging.info(f"Statistics written to: {info_file}")
+    logging.info(f"Total processed lines: {len(all_processed_lines)}")
 
-        for file_path, frame in file_paths_and_frames:
-            if args.path_must_contain and args.path_must_contain not in file_path:
-                continue
-            if args.path_must_not_contain and args.path_must_not_contain in file_path:
-                continue
-
-            dest = train_f if rand.random() > args.valid_percent else valid_f
-            if frame is None:
-                print(os.path.relpath(file_path, dir_path), file=dest)
-            else:
-                print(
-                    "{}\t{}".format(os.path.relpath(file_path, dir_path), frame), file=dest
-                )
-    if valid_f is not None:
-        valid_f.close()
-
-    print(f"generate metadata(of paths) at {args.dest}/{output_fname}.tsv")
-
-if __name__ == "__main__":
-    parser = get_parser()
+def main():
+    parser = argparse.ArgumentParser(description='Merge TSV datasets from multiple channels')
+    parser.add_argument('--dir_path', required=True, help='Root directory containing channel subdirectories')
+    parser.add_argument('--output_dir', required=True, help='Output directory for merged dataset')
+    parser.add_argument('--workers', type=int, default=4, help='Number of worker threads')
+    
     args = parser.parse_args()
-    main(args)
+    merge_channels(args.dir_path, args.output_dir, args.workers)
+
+if __name__ == '__main__':
+    main()

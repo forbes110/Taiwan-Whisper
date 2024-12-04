@@ -55,50 +55,50 @@
 #     # --push_to_hub \ 
 
 
-accelerate launch run_distillation.py \
-    --model_name_or_path "/mnt/home/ntuspeechlabtaipei1/forbes/student_model" \
-    --teacher_model_name_or_path "openai/whisper-medium" \
-    --train_dataset_manifest "/mnt/home/ntuspeechlabtaipei1/forbes/cleaned/Awater/cleaned-threshold-0.5-phonemized-mix_detection.tsv" \
-    --train_dataset_name "" \
-    --train_split_name "" \
-    --text_column_name "" \
-    --train_dataset_samples "" \
-    --eval_dataset_name "mozilla-foundation/common_voice_16_1" \
-    --eval_dataset_config_name "zh-TW" \
-    --eval_split_name "validation" \
-    --eval_text_column_name "sentence" \
-    --eval_steps 10 \
-    --save_steps 5 \
-    --warmup_steps 5 \
-    --learning_rate 1e-3 \
-    --lr_scheduler_type "constant_with_warmup" \
-    --timestamp_probability 0.5 \
-    --condition_on_prev_probability 0.2 \
-    --language "zh" \
-    --task "transcribe" \
-    --logging_steps 100 \
-    --save_total_limit 20 \
-    --max_steps 100 \
-    --per_device_train_batch_size 8 \
-    --per_device_eval_batch_size 8 \
-    --dataloader_num_workers 8 \
-    --preprocessing_num_workers 8 \
-    --ddp_timeout 7200 \
-    --dtype "bfloat16" \
-    --attn_implementation "flash_attention_2" \
-    --output_dir "/mnt/home/ntuspeechlabtaipei1/forbes/evaluation_result" \
-    --do_train \
-    --do_eval \
-    --gradient_checkpointing \
-    --overwrite_output_dir \
-    --predict_with_generate \
-    --freeze_encoder \
-    --freeze_embed_positions \
-    --streaming True \
-    --is_prefiltered True \
-    --skip_audio_length_filtering True \
-    --gradient_accumulation_steps 2 \
-    --dataloader_prefetch_factor 2 
+# accelerate launch run_distillation.py \
+#     --model_name_or_path "/mnt/home/ntuspeechlabtaipei1/forbes/student_model" \
+#     --teacher_model_name_or_path "openai/whisper-medium" \
+#     --train_dataset_manifest "/mnt/home/ntuspeechlabtaipei1/forbes/cleaned/Awater/cleaned-threshold-0.5-phonemized-mix_detection.tsv" \
+#     --train_dataset_name "" \
+#     --train_split_name "" \
+#     --text_column_name "" \
+#     --train_dataset_samples "" \
+#     --eval_dataset_name "mozilla-foundation/common_voice_16_1" \
+#     --eval_dataset_config_name "zh-TW" \
+#     --eval_split_name "validation" \
+#     --eval_text_column_name "sentence" \
+#     --eval_steps 10 \
+#     --save_steps 5 \
+#     --warmup_steps 5 \
+#     --learning_rate 1e-3 \
+#     --lr_scheduler_type "constant_with_warmup" \
+#     --timestamp_probability 0.5 \
+#     --condition_on_prev_probability 0.2 \
+#     --language "zh" \
+#     --task "transcribe" \
+#     --logging_steps 100 \
+#     --save_total_limit 20 \
+#     --max_steps 100 \
+#     --per_device_train_batch_size 8 \
+#     --per_device_eval_batch_size 8 \
+#     --dataloader_num_workers 8 \
+#     --preprocessing_num_workers 8 \
+#     --ddp_timeout 7200 \
+#     --dtype "bfloat16" \
+#     --attn_implementation "flash_attention_2" \
+#     --output_dir "/mnt/home/ntuspeechlabtaipei1/forbes/evaluation_result" \
+#     --do_train \
+#     --do_eval \
+#     --gradient_checkpointing \
+#     --overwrite_output_dir \
+#     --predict_with_generate \
+#     --freeze_encoder \
+#     --freeze_embed_positions \
+#     --streaming True \
+#     --is_prefiltered True \
+#     --skip_audio_length_filtering True \
+#     --gradient_accumulation_steps 2 \
+#     --dataloader_prefetch_factor 2 
     #\
     # > full_output.log 2>&1
 

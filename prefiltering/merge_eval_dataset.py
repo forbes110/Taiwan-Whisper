@@ -99,8 +99,8 @@ def save_dataset_to_flac(
         # Store metadata including the ID used
         records.append({
             'idx': idx,
-            'transcription': transcription,
-            'audio_path': audio_path
+            'text': transcription,
+            'audio': audio_path
         })
     
     # Save metadata TSV
@@ -244,6 +244,8 @@ def merge_tsv_files(
     # Concatenate all dataframes
     merged_df = pd.concat(dfs, axis=0, ignore_index=True)
     
+    merged_df.columns = ['idx', 'text', 'audio']
+    
     # Check for duplicates if requested
     if check_duplicates:
         cols_to_check = duplicate_cols if duplicate_cols else merged_df.columns
@@ -266,62 +268,68 @@ def merge_tsv_files(
 if __name__ == "__main__":
     
     # VALID & TEST set
-    save_ML(
-        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/ML2021_ASR_ST',
-        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ML2021_EVAL',
-        prefix='ML2021_EVAL'
-    )
+    # save_ML(
+    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/ML2021_ASR_ST',
+    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ML2021_EVAL',
+    #     prefix='ML2021_EVAL'
+    # )
     
-    save_ML(
-        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_test/ML2021_ASR_ST',
-        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ML2021_TEST',
-        prefix='ML2021_TEST'
-    )
+    # save_ML(
+    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_test/ML2021_ASR_ST',
+    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ML2021_TEST',
+    #     prefix='ML2021_TEST'
+    # )
     
-    save_cv16(
-        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/CV16',
-        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/CV16_EVAL',
-        prefix='CV16_EVAL'
-    )
+    # save_cv16(
+    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/CV16',
+    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/CV16_EVAL',
+    #     prefix='CV16_EVAL'
+    # )
     
-    save_cv16(
-        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_test/CV16',
-        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/CV16_TEST',
-        prefix='CV16_TEST'
-    )
+    # save_cv16(
+    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_test/CV16',
+    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/CV16_TEST',
+    #     prefix='CV16_TEST'
+    # )
     
-    save_ascend(
-        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/ASCEND',
-        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ASCEND_EVAL',
-        prefix='ASCEND_EVAL'
-    )
-    save_ascend(
-        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_test/ASCEND',
-        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ASCEND_TEST',
-        prefix='ASCEND_TEST'
-    )
+    # save_ascend(
+    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_eval/ASCEND',
+    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ASCEND_EVAL',
+    #     prefix='ASCEND_EVAL'
+    # )
+    # save_ascend(
+    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_test/ASCEND',
+    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ASCEND_TEST',
+    #     prefix='ASCEND_TEST'
+    # )
     
-    # TRAINING set
-    save_cv16(
-        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_train/CV17_train_minnan',
-        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/CV17_TRAIN_MINNAN',
-        prefix='CV17_TRAIN_MINNAN'
-    )
-    save_cv16(
-        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_train/CV16_train',
-        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/CV16_TRAIN',
-        prefix='CV16_TRAIN'
-    )
-    save_cv16(
-        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_train/CV16_other',
-        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/CV16_OTHER',
-        prefix='CV16_OTHER'
-    )
-    save_minnan_sentence(
-        dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_train/sentences_minnan',
-        output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/MINNAN',
-        prefix='MINNAN'
-    )
+    # # TRAINING set
+    # save_cv16(
+    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_train/CV17_train_minnan',
+    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/CV17_TRAIN_MINNAN',
+    #     prefix='CV17_TRAIN_MINNAN'
+    # )
+    # save_cv16(
+    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_train/CV16_train',
+    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/CV16_TRAIN',
+    #     prefix='CV16_TRAIN'
+    # )
+    # save_cv16(
+    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_train/CV16_other',
+    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/CV16_OTHER',
+    #     prefix='CV16_OTHER'
+    # )
+    # save_minnan_sentence(
+    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_train/sentences_minnan',
+    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/MINNAN',
+    #     prefix='MINNAN'
+    # )
+    
+    # save_ascend(
+    #     dataset_path='/mnt/home/ntuspeechlabtaipei1/forbes/dataset_train/ASCEND',
+    #     output_dir='/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/train/ASCEND_TRAIN',
+    #     prefix='ASCEND_TRAIN'
+    # )
     
     # Merge
     # test_sets = [
@@ -329,11 +337,11 @@ if __name__ == "__main__":
     #     "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/CV16_TEST/metadata.tsv",
     #     "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ML2021_TEST/metadata.tsv"
     # ]
-    # valid_sets = [
-    #     "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ASCEND_EVAL/metadata.tsv",
-    #     "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/CV16_EVAL/metadata.tsv",
-    #     "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ML2021_EVAL/metadata.tsv"
-    # ]
+    valid_sets = [
+        "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ASCEND_EVAL/metadata.tsv",
+        "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/CV16_EVAL/metadata.tsv",
+        "/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ML2021_EVAL/metadata.tsv"
+    ]
     
     # merge_tsv_files(tsv_files=test_sets, output_path="/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/test/ACM_TEST.tsv")
-    # merge_tsv_files(tsv_files=valid_sets, output_path="/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ACM_EVAL.tsv")
+    merge_tsv_files(tsv_files=valid_sets, output_path="/mnt/home/ntuspeechlabtaipei1/forbes/final_dataset/valid/ACM_EVAL.tsv")

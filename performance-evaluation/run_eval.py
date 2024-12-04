@@ -476,8 +476,6 @@ def main():
         raise ValueError("Wandb logging requires wandb to be installed. Run `pip install wandb` to enable.")
 
     # 3. Load dataset
-    # TODO: here to load localized test set
-    
     raw_datasets = IterableDatasetDict()
 
     # Convert lists of dataset names/configs/splits to a dict
@@ -492,6 +490,7 @@ def main():
 
     # load multiple eval sets
     for dataset_dict in tqdm(dataset_names_dict, desc="Loading datasets..."):
+        # TODO: here to load localized test set
         # sub_dataset = load_from_disk(
         sub_dataset = load_dataset(
             dataset_dict["name"],
@@ -589,6 +588,8 @@ def main():
     # We need to read the audio files as arrays and tokenize the targets.
     # TODO: check here for normalizer
     audio_column_name = data_args.audio_column_name
+    
+    # Not none, use BasicTextNormalizer()
     normalizer = (
         BasicTextNormalizer() if data_args.language is not None
         else EnglishTextNormalizer(processor.tokenizer.english_spelling_normalizer)

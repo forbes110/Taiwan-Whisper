@@ -52,6 +52,20 @@ def process_time_segments(df):
     
     return df
 
+def replace_chinese_characters(df):
+    """
+    Replace specific Chinese characters in the text column.
+    
+    Args:
+        df: DataFrame with a 'text' column
+            
+    Returns:
+        DataFrame with replaced characters
+    """
+    if 'text' in df.columns:
+        df['text'] = df['text'].str.replace('喫', '吃')
+    return df
+
 def process_file(file_path, output_dir):
     """
     Process a single CSV file and save the results.
@@ -66,6 +80,9 @@ def process_file(file_path, output_dir):
     try:
         # Read CSV file
         df = pd.read_csv(file_path)
+        
+        # Replace Chinese characters
+        df = replace_chinese_characters(df)
         
         # Process the segments
         processed_df = process_time_segments(df)
@@ -139,9 +156,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
-    
-# python3 overlap_handling.py \
-# --input_dir /mnt/home/ntuspeechlabtaipei1/forbes/pseudo_label/00c55377-4b9a-488c-bf35-898c2a3700fc \   
-# --output_dir /mnt/home/ntuspeechlabtaipei1/forbes/_pseudo_label/00c55377-4b9a-488c-bf35-898c2a3700fc \
-# --num_workers 100
