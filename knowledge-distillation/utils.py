@@ -1,6 +1,7 @@
 import argparse
 import opencc
 import csv
+import pandas as pd
 import editdistance
 from tqdm import tqdm
 from collections import defaultdict
@@ -444,8 +445,8 @@ def _get_feature_by_audio_fpath(audio_fpath, last_segment_handler_type="trim"):
         lines = trans_fr.readlines()
         
         whisper_transcript = lines[0].strip().split("<|endoftext|>")[0] # remove <|endoftext|>
-        end_transcript = lines[2].strip()
-        prev_transcript = lines[4].strip().split("<|endoftext|>")[0] # remove <|endoftext|>
+        end_transcript = lines[2].strip() if len(lines) > 2 else ""
+        prev_transcript = lines[4].strip().split("<|endoftext|>")[0] if len(lines) > 4 else ""  # remove <|endoftext|>
         
         feature["whisper_transcript"] = whisper_transcript
         feature["last_segment_transcript"] = end_transcript

@@ -184,6 +184,7 @@ def main():
 
     if errors:
         try:
+            #update_tsv_file(args.input_path, failed_paths, prefix)
             with open(args.output_path, 'w') as error_file:
                 for error in errors:
                     error_file.write(error + '\n')
